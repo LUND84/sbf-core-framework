@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#101515">
+    <title>SBF · 数字人演播室</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/module-c.css">
+    <script type="module" src="/app.bundle.js"></script>
+    <script type="module" src="/module-c.js"></script>
+  </head>
+  <body>
+    <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4m4-8v12m4-15v18m4-15v12m4-8v4"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7M12 5v15"/></symbol>
+      <symbol id="i-audio" viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4V5Zm4 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
+      <symbol id="i-mute" viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4V5Zm5 4 6 6m0-6-6 6"/></symbol>
+      <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h5m4 0h7M4 17h9m4 0h3M9 4v6m4 4v6"/></symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="m10 13 4-4m-6 7-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5m-11 5v-5h5m-5-1a8 8 0 0 1 14-5l2 2M4 16l2 2a8 8 0 0 0 14-5"/></symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9ZM8 8h8M8 12h5"/></symbol>
+    </svg>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="SBF 数字人演播室首页">
+          <span class="brand-mark"><svg><use href="#i-wave"/></svg></span>
+          <span>SBF<span class="brand-divider">/</span><span class="brand-caption">STUDIO</span></span>
+        </a>
+        <div class="topbar-right">
+          <span class="connection-pill" id="connection-pill" data-state="connecting"><span class="status-dot"></span><span id="connection-label">正在连接</span></span>
+          <button class="icon-button" id="access-button" type="button" aria-label="输入访问码" title="输入访问码" hidden><svg><use href="#i-lock"/></svg></button>
+          <span class="topbar-date" id="local-time">—</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="page-heading" aria-labelledby="page-title">
+          <div><div class="eyebrow"><span></span> REALTIME AVATAR</div><h1 id="page-title">数字人演播室<span class="heading-period">.</span></h1><p>发送一段文字，观看数字人实时回应。</p></div>
+          <div class="session-label"><span class="small-label">当前会话</span><span id="session-label">等待视频源</span></div>
+        </section>
+
+        <div class="workspace">
+          <section class="stage-panel" aria-label="实时视频">
+            <div class="panel-heading"><div class="panel-title"><span class="status-dot" id="stage-dot"></span>实时画面</div><span class="source-tag" id="source-tag">未连接视频源</span></div>
+            <p class="identity-disclosure">AI 角色演绎 · 非本人直播</p>
+            <div class="video-stage" id="video-stage" data-state="offline">
+              <video id="avatar-video" autoplay muted playsinline preload="none" aria-label="数字人实时视频"></video>
+              <div class="stage-topline"><span class="live-badge" id="live-badge" hidden><span></span><span id="live-label">LIVE</span></span></div>
+              <div class="test-banner" id="test-banner" hidden>测试画面 · 当前视频用于验证连接，不是数字人渲染</div>
+              <div class="stage-overlay" id="stage-overlay">
+                <div class="stage-reticle"><span></span><svg><use href="#i-wave"/></svg><span></span></div>
+                <div class="stage-kicker" id="stage-kicker">WAITING FOR SOURCE</div>
+                <h2 id="stage-title">等待数字人上线</h2>
+                <p id="stage-description">网页已就绪。连接渲染设备后，实时画面会出现在这里。</p>
+                <button class="secondary-button" id="play-button" type="button" hidden>点击播放</button>
+              </div>
+              <div class="stage-bottomline"><time class="stage-clock" id="stage-current-time" aria-label="当前时间（香港时间）" title="香港时间 · 当前时钟">--:--:--</time><button class="stage-text-button" id="catchup-button" type="button" hidden>回到直播 <span>↗</span></button></div>
+              <aside id="mc-board" class="mc-board" aria-label="付费留言榜单" hidden></aside>
+            </div>
+            <div class="video-controls">
+              <button class="audio-button" id="audio-button" type="button" aria-label="启用声音" aria-pressed="false"><svg id="audio-icon"><use href="#i-mute"/></svg><span id="audio-label">启用声音</span></button>
+              <div class="playback-summary"><span class="status-dot" id="playback-dot"></span><span id="playback-label">尚无视频</span></div>
+              <button class="icon-button" id="fullscreen-button" type="button" aria-label="全屏播放" title="全屏播放"><svg><use href="#i-expand"/></svg></button>
+            </div>
+            <div class="telemetry-grid">
+              <div><span class="small-label">渲染设备</span><strong id="worker-value">离线</strong><span class="metric-note" id="worker-note">等待设备接入</span></div>
+              <div><span class="small-label">画面规格</span><strong id="format-value">—</strong><span class="metric-note" id="format-note">以视频源上报为准</span></div>
+              <div><span class="small-label">任务队列</span><strong id="queue-value">0<span> 项</span></strong><span class="metric-note" id="queue-note">暂无正在执行的任务</span></div>
+            </div>
+          </section>
+
+          <section class="chat-panel" aria-labelledby="chat-title">
+            <div class="panel-heading"><div class="panel-title"><svg><use href="#i-chat"/></svg><h2 id="chat-title">文字互动</h2></div><span class="chat-count" id="chat-count">0 条</span></div>
+            <div class="chat-context"><span class="context-dot"></span><span id="chat-context-label">渲染设备上线后可发送文字</span></div>
+            <div class="voice-status" id="voice-status">音色信息等待设备上报</div>
+            <div class="mc-entry" aria-label="模块 C 付费留言">
+              <div class="mc-entry-heading"><span class="mc-entry-title">付费留言 · 主播优先回应</span><button id="mc-open" type="button">付费留言 ↗</button></div>
+              <p id="mc-service-state" class="mc-service-state" role="status">正在读取收款配置…</p>
+              <p>互动优先级：付费留言 ＞ X 弹幕 ＞ 自言自语</p>
+            </div>
+            <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions text" aria-label="互动记录">
+              <div class="chat-empty" id="chat-empty"><div class="empty-chat-icon"><svg><use href="#i-chat"/></svg></div><h3>从一句话开始</h3><p id="empty-chat-description">输入内容，数字人会在画面中说出来。已提交的任务和处理状态会显示在这里。</p><div class="empty-divider"></div><span>本页显示真实任务与连接状态</span></div>
+            </div>
+            <div class="composer-area">
+              <div class="composer-notice" id="composer-notice">视频源尚未连接</div>
+              <form id="chat-form" class="composer"><label class="sr-only" for="chat-input">发送给数字人的文字</label><textarea id="chat-input" name="text" rows="3" maxlength="1000" placeholder="想让数字人说些什么？" disabled></textarea><div class="composer-footer"><span id="character-count">0 / 1000</span><button id="send-button" class="send-button" type="submit" disabled><span>发送</span><svg><use href="#i-arrow"/></svg></button></div></form>
+              <div class="composer-help"><span>Enter 发送 <span class="help-divider">·</span> Shift + Enter 换行</span><button class="interrupt-button" id="interrupt-button" type="button" disabled><svg><use href="#i-stop"/></svg>打断当前任务</button></div>
+            </div>
+          </section>
+        </div>
+
+        <details class="diagnostics" id="diagnostics"><summary><span><svg><use href="#i-sliders"/></svg>连接与播放诊断</span><span id="diagnostic-summary">正在建立连接<span class="chevron">⌄</span></span></summary><div class="diagnostic-content"><dl><div><dt>网页连接</dt><dd id="diag-socket">连接中</dd></div><div><dt>视频格式</dt><dd id="diag-mime">—</dd></div><div><dt>距直播边缘</dt><dd id="diag-lag">—</dd></div><div><dt>已接收数据</dt><dd id="diag-bytes">0 B</dd></div><div><dt>播放器缓冲</dt><dd id="diag-buffer">—</dd></div><div><dt>视频批次</dt><dd id="diag-epoch">—</dd></div></dl><div class="diagnostic-log" id="diagnostic-log" aria-live="off">等待服务器状态。</div><button class="secondary-button" id="copy-playback-diagnostics" type="button">复制播放诊断</button><button class="secondary-button" id="reconnect-button" type="button"><svg><use href="#i-refresh"/></svg>重新连接</button></div></details>
+      </main>
+      <footer class="page-footer"><span><span class="footer-dot"></span>私有演播空间</span><span>画面由已连接的渲染设备提供</span></footer>
+    </div>
+
+    <dialog id="login-dialog" aria-labelledby="login-title"><form id="login-form"><div class="login-icon"><svg><use href="#i-lock"/></svg></div><div class="eyebrow">PRIVATE ACCESS</div><h2 id="login-title">进入演播室</h2><p>请输入站点访问码以连接实时画面并发送文字。</p><label for="access-code">访问码</label><input id="access-code" name="code" type="password" autocomplete="current-password" required maxlength="256" placeholder="输入访问码"><p class="form-error" id="login-error" role="alert"></p><div class="login-actions"><button class="secondary-button" id="login-close" type="button">稍后</button><button class="primary-button" id="login-submit" type="submit">连接演播室 <span>↗</span></button></div></form></dialog>
+    <dialog id="mc-dialog" class="mc-dialog" aria-labelledby="mc-title">
+      <div class="mc-dialog-heading"><div><p class="mc-kicker">MODULE C / PRIORITY MESSAGE</p><h2 id="mc-title">让主播优先回应你</h2></div><button id="mc-close" class="mc-close" type="button" aria-label="关闭付费留言">×</button></div>
+      <p id="mc-explainer" class="mc-explainer">正在读取收费档位。支付确认后展示代币 Logo、CA 和留言，主播按优先队列回应。</p>
+      <p id="mc-config-status" class="mc-config-status" role="status">正在读取收款配置…</p>
+      <form id="mc-form">
+        <div class="mc-fields">
+          <div class="mc-field-row">
+            <label for="mc-chain"><span>付款网络 / 稳定币</span><select id="mc-chain" name="chain" required disabled><option>正在读取…</option></select></label>
+            <label for="mc-tier"><span>留言档位 / 上榜时长</span><select id="mc-tier" name="tierId" required disabled><option value="">正在读取收费档位…</option></select></label>
+          </div>
+          <p id="mc-estimate" class="mc-estimate">选择档位以确认价格和上榜时长</p>
+          <p id="mc-pricing-notice" class="mc-pricing-notice" role="status" hidden></p>
+          <label for="mc-token-chain"><span>你要展示的代币所属链</span><select id="mc-token-chain" name="tokenChain" required><option value="solana">Solana</option><option value="tron">TRON</option><option value="ethereum">Ethereum</option><option value="bsc">BNB Smart Chain</option></select><p class="mc-hint">可以与付款网络不同。Logo 按此链和 CA 获取；暂无 Logo 时显示占位标志。</p></label>
+          <label for="mc-ca"><span>代币 CA / Mint 地址（必填）</span><input id="mc-ca" name="ca" required maxlength="100" autocomplete="off" spellcheck="false" placeholder="粘贴代币合约地址"></label>
+          <label for="mc-name"><span>昵称（选填）</span><input id="mc-name" name="name" maxlength="40" autocomplete="nickname" placeholder="匿名观众"></label>
+          <label for="mc-message"><span>给主播的留言（最多 1000 字）</span><textarea id="mc-message" name="message" maxlength="1000" required rows="3" placeholder="想让主播聊聊这个币的什么？"></textarea></label>
+        </div>
+        <div class="mc-actions"><span class="mc-priority">确认支付后进入最高优先级队列</span><button id="mc-create" class="primary-button mc-submit" type="submit" disabled>连接钱包并创建订单 ↗</button></div>
+      </form>
+      <section id="mc-order-panel" aria-label="我的付费留言订单" hidden>
+        <div id="mc-order-state" class="mc-order-state" role="status"></div>
+        <dl class="mc-order-details">
+          <div><dt>订单号（请保留）</dt><dd id="mc-order-id"></dd></div>
+          <div><dt>本单上榜时长（订单快照）</dt><dd id="mc-order-duration"></dd></div>
+          <div id="mc-payment-instructions"><dt>请使用此网络转账</dt><dd id="mc-order-chain"></dd><dt>收款稳定币合约 / Mint（用于付款）</dt><dd><code id="mc-payment-token-address"></code><p id="mc-payment-token-note" class="mc-hint"></p></dd><dt>准确支付数量（Gas 由钱包另付）</dt><dd id="mc-pay-amount" class="mc-pay-amount"></dd><dt>收款地址</dt><dd class="mc-payment-address"><code id="mc-recipient"></code><button id="mc-copy" class="mc-copy" type="button">复制</button></dd></div>
+          <div id="mc-order-expiry-row"><dt>付款剩余时间</dt><dd id="mc-order-expiry" class="mc-order-clock"></dd></div>
+          <div><dt>展示代币 · <span id="mc-order-token-chain"></span> · CA</dt><dd><code id="mc-order-ca"></code></dd></div>
+          <div><dt>留言</dt><dd id="mc-order-message"></dd></div>
+        </dl>
+        <p id="mc-payment-warning" class="mc-payment-warning">请从自己的钱包按标价转账，Gas 由用户另付。提交交易哈希后，需使用付款钱包签名认领订单；此签名只核验交易归属。交易所直接提现暂不支持。</p>
+        <form id="mc-verify-form"><label class="mc-tx-label" for="mc-tx">付款交易哈希 / TxID</label><input id="mc-tx" class="mc-tx-input" name="txHash" required maxlength="160" autocomplete="off" spellcheck="false" placeholder="付款成功后，粘贴这笔转账的交易哈希"><p class="mc-verify-help">提交哈希后核对真实链上转账。未确认到账前不会上榜，也不会插入主播队列。</p><div class="mc-actions"><button id="mc-verify" class="primary-button mc-submit" type="submit">提交交易哈希验证</button></div></form>
+        <div class="mc-actions"><button id="mc-order-refresh" class="secondary-button" type="button">刷新订单状态</button><button id="mc-new" class="secondary-button" type="button">写一条新留言</button></div>
+        <p id="mc-prior-order-note" class="mc-hint">另建留言不会取消当前订单；若已转账，请先完成此订单验证并保留订单号。</p>
+      </section>
+      <p id="mc-error" class="mc-error" role="alert"></p>
+      <button id="mc-recover-new" class="secondary-button" type="button" hidden>返回填写新留言（旧订单仍有效）</button>
+    </dialog>
+    <div class="toast" id="toast" role="status" hidden></div>
+    <noscript><div class="noscript-notice">此页面需要启用 JavaScript 才能连接实时视频。</div></noscript>
+  </body>
+</html>
