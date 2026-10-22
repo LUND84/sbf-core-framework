@@ -1,0 +1,2 @@
+# Reason: consistent LF text keeps cross-platform source reviews stable.
+* text=auto eol=lf

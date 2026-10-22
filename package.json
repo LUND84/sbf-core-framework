@@ -1,0 +1,25 @@
+{
+  "name": "sbf-framework-share",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A standalone technical sharing snapshot of an avatar interaction and media relay framework.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prestart": "npm run build",
+    "start": "node web/server/main.js",
+    "test": "node --test web/test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "ethers": "6.17.0",
+    "hls.js": "1.7.3",
+    "mpegts.js": "1.8.2",
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

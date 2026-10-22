@@ -1,0 +1,24 @@
+# Reason: dependencies are restored from the committed lockfile.
+node_modules/
+# Reason: bundles are reproducible build outputs rather than source.
+web/public/app.bundle.js
+web/public/app.bundle.js.map
+# Reason: local credentials must never enter the sharing repository.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+# Reason: runtime state and diagnostic output may contain user data.
+.runtime/
+run/
+*.log
+*.pid
+*.lock.tmp
+# Reason: editor and operating-system metadata is machine specific.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
