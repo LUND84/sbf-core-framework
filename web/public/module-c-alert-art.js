@@ -1,12 +1,12 @@
 export const ALERT_DURATIONS = Object.freeze([4000, 5000, 6000, 7000, 8000, 10000, 12000]);
 export const ALERT_STYLES = Object.freeze([
-  { name: '宝石闪光', color: '#63f5cb', second: '#c9fff0' },
-  { name: '双环共振', color: '#a99aff', second: '#6feaff' },
-  { name: '耀金星爆', color: '#ffc65c', second: '#ff8c64' },
-  { name: '星际彗星', color: '#55dfff', second: '#9c89ff' },
-  { name: '加冕时刻', color: '#ffda75', second: '#fff1bb' },
-  { name: '流星之雨', color: '#f28dff', second: '#79dfff' },
-  { name: '传奇庆典', color: '#ffe08b', second: '#ff83bd' },
+  { name: 'Gem Sparkle', color: '#63f5cb', second: '#c9fff0' },
+  { name: 'Twin-Ring Resonance', color: '#a99aff', second: '#6feaff' },
+  { name: 'Golden Starburst', color: '#ffc65c', second: '#ff8c64' },
+  { name: 'Interstellar Comet', color: '#55dfff', second: '#9c89ff' },
+  { name: 'Coronation', color: '#ffda75', second: '#fff1bb' },
+  { name: 'Meteor Shower', color: '#f28dff', second: '#79dfff' },
+  { name: 'Legendary Celebration', color: '#ffe08b', second: '#ff83bd' },
 ]);
 
 function random(seed) {

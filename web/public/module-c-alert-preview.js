@@ -4,7 +4,7 @@ import { paintAlertArt } from './module-c-alert-art.js';
 const allowed = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 const status = document.getElementById('preview-status');
 if (!allowed) {
-  status.textContent = '此演示只在本机 localhost 预览服务器中运行。';
+  status.textContent = 'This demo runs only on a local localhost preview server.';
   document.querySelectorAll('button').forEach(button => { button.disabled = true; });
 } else {
   const surface = ensureAlertSurface(document.getElementById('preview-board'));
@@ -13,7 +13,7 @@ if (!allowed) {
   let events = [], sequence = 0, recorder = null, exportFrame = null, downloadUrl = '';
   const event = (tierIndex, startsAt) => ({ id: (++sequence).toString(16).padStart(16, '0'), version: 1,
     tierIndex, startsAt, expiresAt: startsAt + ALERT_DURATIONS[tierIndex - 1], amount: amounts[tierIndex - 1],
-    name: `本地演示 ${String(tierIndex).padStart(2, '0')}`, chain: 'solana', tokenChain: 'ethereum',
+    name: `Local demo ${String(tierIndex).padStart(2, '0')}`, chain: 'solana', tokenChain: 'ethereum',
     ca: '0x1111111111111111111111111111111111111111', logoUrl: '/preview-token.svg', symbol: 'DEMO' });
   const apply = () => controller.update({ alerts: events, serverTime: Date.now() });
   const buttons = document.getElementById('tier-buttons');
@@ -22,13 +22,13 @@ if (!allowed) {
   }
   function playTier(index, lateMs = 0) {
     events = [event(index, Date.now() - lateMs)]; apply(); pressed(index);
-    status.textContent = `第 ${index} 档 · ${ALERT_STYLES[index - 1].name} · ${ALERT_DURATIONS[index - 1] / 1000} 秒`;
+    status.textContent = `Tier ${index} · ${ALERT_STYLES[index - 1].name} · ${ALERT_DURATIONS[index - 1] / 1000} seconds`;
     return events[0];
   }
   function playAll() {
     let at = Date.now() + 600;
     events = amounts.map((_, i) => { const value = event(i + 1, at); at = value.expiresAt; return value; });
-    apply(); pressed(0); status.textContent = '依次播放七档：4 / 5 / 6 / 7 / 8 / 10 / 12 秒（无音轨）';
+    apply(); pressed(0); status.textContent = 'Playing all seven tiers: 4 / 5 / 6 / 7 / 8 / 10 / 12 seconds (no audio)';
     return at;
   }
   amounts.forEach((amount, i) => {
@@ -67,7 +67,7 @@ if (!allowed) {
   }
   document.getElementById('record-all').onclick = async () => {
     if (recorder?.state === 'recording') return;
-    if (!globalThis.MediaRecorder) { status.textContent = '当前浏览器未提供 MediaRecorder，请使用 Chrome。'; return; }
+    if (!globalThis.MediaRecorder) { status.textContent = 'This browser does not support MediaRecorder. Please use Chrome.'; return; }
     const canvas = document.createElement('canvas'); canvas.width = 1920; canvas.height = 1080;
     const stream = canvas.captureStream(30), chunks = [];
     const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(type => MediaRecorder.isTypeSupported(type));
@@ -78,7 +78,7 @@ if (!allowed) {
       if (downloadUrl) URL.revokeObjectURL(downloadUrl);
       downloadUrl = URL.createObjectURL(new Blob(chunks, { type: mimeType }));
       const link = document.getElementById('download'); link.href = downloadUrl; link.download = 'module-c-seven-alerts-local.webm'; link.hidden = false;
-      status.textContent = '七档静音 WebM 已生成；这是本地演示，没有真实收款。';
+      status.textContent = 'The silent WebM of all seven tiers is ready. This is a local demo with no real payments.';
       document.getElementById('record-all').disabled = false; link.click();
     };
     const end = playAll(); exportPaint(canvas, document.createElement('canvas'));

@@ -23,7 +23,7 @@ export class PlaybackBuffer {
       if (this.#trim) { this.#trace('trim-end', this.#trim); this.#trim = null; }
       this.#complete();
     };
-    this.#errorListener = () => this.#error('视频片段无法解码，请重新连接。');
+    this.#errorListener = () => this.#error('Could not decode the video segment. Please reconnect.');
     buffer.addEventListener('updateend', this.#updateListener);
     buffer.addEventListener('error', this.#errorListener);
   }
@@ -37,7 +37,7 @@ export class PlaybackBuffer {
   push(data) {
     if (this.#bytes + data.byteLength > this.maxBytes) {
       this.#queue = []; this.#bytes = 0;
-      this.#error('视频缓冲积压，请重新连接以回到直播。'); return false;
+      this.#error('The video buffer is backed up. Reconnect to return to live playback.'); return false;
     }
     this.#queue.push({ data, retries: 0 }); this.#bytes += data.byteLength; return true;
   }
@@ -57,7 +57,7 @@ export class PlaybackBuffer {
         item.retries += 1; this.#queue.unshift(item); this.#bytes += item.data.byteLength;
         return 'quota';
       }
-      this.#error(`视频缓冲写入失败：${error.message}`);
+      this.#error(`Could not append to the video buffer: ${error.message}`);
     }
   }
   trim(currentTime, retain) {

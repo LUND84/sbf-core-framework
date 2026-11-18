@@ -1,18 +1,18 @@
 import { AutonomousWarm } from './autonomous-warm.js';
 
 const topics = [
-  ['Bitcoin 与区块空间', 'Bitcoin block space, fees, and why settlement matters'],
-  ['稳定币', 'stablecoin reserves, redemption, and payment use cases'],
-  ['DeFi 流动性', 'DeFi liquidity pools and the tradeoffs of automated market makers'],
-  ['钱包与私钥', 'wallet security, private keys, and self-custody tradeoffs'],
-  ['以太坊', 'Ethereum validators, staking, and network incentives'],
+  ['Bitcoin and block space', 'Bitcoin block space, fees, and why settlement matters'],
+  ['Stablecoins', 'stablecoin reserves, redemption, and payment use cases'],
+  ['DeFi liquidity', 'DeFi liquidity pools and the tradeoffs of automated market makers'],
+  ['Wallets and private keys', 'wallet security, private keys, and self-custody tradeoffs'],
+  ['Ethereum', 'Ethereum validators, staking, and network incentives'],
   ['Layer 2', 'Layer 2 scaling and the tradeoffs around bridges and sequencers'],
-  ['交易所风控', 'exchange risk management, collateral, and leverage'],
-  ['链上透明度', 'on-chain transparency and the limits of proof of reserves'],
-  ['代币经济', 'token incentives, supply schedules, and sustainable demand'],
+  ['Exchange risk management', 'exchange risk management, collateral, and leverage'],
+  ['On-chain transparency', 'on-chain transparency and the limits of proof of reserves'],
+  ['Token economics', 'token incentives, supply schedules, and sustainable demand'],
   ['MEV', 'MEV and transaction ordering as a market design problem'],
-  ['跨链', 'cross-chain interoperability and bridge security assumptions'],
-  ['Crypto 应用', 'practical crypto applications and how to evaluate their usefulness'],
+  ['Cross-chain interoperability', 'cross-chain interoperability and bridge security assumptions'],
+  ['Crypto applications', 'practical crypto applications and how to evaluate their usefulness'],
 ];
 
 const prompt = subject => `Continue your crypto monologue about ${subject}. `
@@ -114,7 +114,7 @@ export class AutonomousTalk {
     } else if (event.status === 'error') {
       this.warm.clear();
       this.failures += 1;
-      this.lastError = '主动讲话未完成；请检查设备状态后重试。';
+      this.lastError = 'Autonomous narration did not complete. Please check the worker status and try again.';
       // Bounded exponential backoff stops a broken warm actor from being hammered.
       // Reason: a generation fault must not become an endless background retry loop.
       if (this.failures >= 3) this.enabled = false;

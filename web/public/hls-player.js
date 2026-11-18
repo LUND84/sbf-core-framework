@@ -14,7 +14,7 @@ export class HlsPlayer {
       if (this.started === null || this.userPaused) return;
       this.diagnostics.waiting(video, this.bufferAhead());
       if (this.firstFrameMs !== null) this.waitingAfterFirstFrame++;
-      this.setState('buffering', '视频传输恢复中');
+      this.setState('buffering', 'Recovering the video connection');
     });
   }
   resetMetrics() {
@@ -65,7 +65,7 @@ export class HlsPlayer {
   start() {
     if (this.started !== null) return;
     const generation = ++this.generation; this.started = this.now(); this.resetMetrics();
-    this.diagnostics.reset(this.video); this.setState('buffering', '正在接入持续直播');
+    this.diagnostics.reset(this.video); this.setState('buffering', 'Connecting to the continuous live stream');
     const url = '/api/hls/sbf-hls/index.m3u8';
     if (this.HlsClass.isSupported()) {
       this.hls = new this.HlsClass({ lowLatencyMode: true, enableWorker: true,
@@ -81,15 +81,15 @@ export class HlsPlayer {
       this.hls.on(events.ERROR, (_event, data) => {
         if (generation !== this.generation || !data.fatal) return;
         this.httpStats.fatalErrors++;
-        this.onLog('视频连接正在恢复'); this.setState('buffering', '视频连接正在恢复');
+        this.onLog('Recovering the video connection'); this.setState('buffering', 'Recovering the video connection');
         if (data.type === this.HlsClass.ErrorTypes.NETWORK_ERROR) this.hls.startLoad();
         else if (data.type === this.HlsClass.ErrorTypes.MEDIA_ERROR) this.hls.recoverMediaError();
-        else this.setState('error', '请点击重新连接');
+        else this.setState('error', 'Click to reconnect');
       });
       this.hls.attachMedia(this.video);
     } else if (this.video.canPlayType?.('application/vnd.apple.mpegurl')) {
       this.video.src = url; void this.tryPlay();
-    } else { this.setState('error', '此浏览器不支持直播视频'); return; }
+    } else { this.setState('error', 'This browser does not support live video'); return; }
     const frame = now => {
       if (generation !== this.generation) return;
       this.firstFrameMs ??= now - this.started; this.presentedFrames++;
@@ -110,7 +110,7 @@ export class HlsPlayer {
     const generation = this.generation; this.playPending = true;
     try { this.diagnostics.playCall(); await this.video.play(); }
     catch (error) {
-      if (generation === this.generation) this.setState(error.name === 'NotAllowedError' ? 'blocked' : 'buffering', '点击继续播放');
+      if (generation === this.generation) this.setState(error.name === 'NotAllowedError' ? 'blocked' : 'buffering', 'Click to resume playback');
     } finally { if (generation === this.generation) this.playPending = false; }
   }
   bufferAhead() {

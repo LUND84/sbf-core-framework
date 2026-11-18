@@ -20,7 +20,7 @@ export class RtcPlayer {
       if (!this.reader || this.userPaused) return;
       this.diagnostics.waiting(video, null);
       if (this.firstFrameMs !== null) this.waitingAfterFirstFrame++;
-      this.setState('buffering', '实时传输恢复中');
+      this.setState('buffering', 'Recovering the live connection');
       // No pause or seek here. Reason: native WebRTC already owns packet jitter recovery.
     });
   }
@@ -35,7 +35,7 @@ export class RtcPlayer {
   start() {
     if (this.reader) return;
     const generation = ++this.generation; this.resetMetrics(); this.started = this.now();
-    this.diagnostics.reset(this.video); this.setState('buffering', '正在接入持续直播');
+    this.diagnostics.reset(this.video); this.setState('buffering', 'Connecting to the continuous live stream');
     this.reader = new this.Reader({ url: this.origin + '/api/webrtc/sbf-trial/whep',
       transport: this.preferredTransport,
       onTrack: event => {
@@ -45,7 +45,7 @@ export class RtcPlayer {
         if (this.video.srcObject !== event.streams[0]) this.video.srcObject = event.streams[0];
         void this.tryPlay();
       },
-      onError: () => { if (generation === this.generation) { this.onLog('实时媒体连接重试中'); this.setState('buffering', '正在恢复实时连接'); } },
+      onError: () => { if (generation === this.generation) { this.onLog('Retrying the live media connection'); this.setState('buffering', 'Recovering the live connection'); } },
     });
     const frame = now => {
       if (generation !== this.generation) return;
@@ -67,7 +67,7 @@ export class RtcPlayer {
     const generation = this.generation; this.playPending = true;
     try { this.diagnostics.playCall(); await this.video.play(); }
     catch (error) {
-      if (generation === this.generation) this.setState(error.name === 'NotAllowedError' ? 'blocked' : 'buffering', '点击继续播放');
+      if (generation === this.generation) this.setState(error.name === 'NotAllowedError' ? 'blocked' : 'buffering', 'Click to resume playback');
     } finally { if (generation === this.generation) this.playPending = false; }
   }
   setVisibility(hidden) { this.hidden = hidden; this.lastFrame = null; if (!hidden) this.maintain(); }

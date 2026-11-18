@@ -44,9 +44,9 @@ export class PlaybackDiagnostics {
 
 export function playbackDiagnosticText(value = {}) {
   const show = number => Number.isFinite(number) ? String(number) : '—';
-  const flags = `${value.paused === null || value.paused === undefined ? '—' : value.paused ? '停' : '播'}/${value.seeking === null || value.seeking === undefined ? '—' : value.seeking ? '跳转' : '稳'}`;
+  const flags = `${value.paused === null || value.paused === undefined ? '—' : value.paused ? 'paused' : 'playing'}/${value.seeking === null || value.seeking === undefined ? '—' : value.seeking ? 'seeking' : 'steady'}`;
   const waiting = value.lastWaiting;
-  const last = waiting ? ` · 等待 ${show(waiting.readyState)}/${Number.isFinite(waiting.bufferAheadSeconds) ? waiting.bufferAheadSeconds.toFixed(2) + 's' : '—'}` : '';
+  const last = waiting ? ` · waiting ${show(waiting.readyState)}/${Number.isFinite(waiting.bufferAheadSeconds) ? waiting.bufferAheadSeconds.toFixed(2) + 's' : '—'}` : '';
   // Frame totals are cumulative epoch counters, not FPS. Reason: delivered/decoded/displayed rates must not be inferred from a metadata label.
-  return `ready ${show(value.readyState)} · ${flags} · 画面帧 ${show(value.totalVideoFrames)} · 丢帧 ${show(value.droppedVideoFrames)} · 程序暂停 ${show(value.programPauseCalls)} · 过期等待 ${show(value.ignoredStaleWaiting)} · seek ${show(value.autoSeekCalls)}${last}`;
+  return `ready ${show(value.readyState)} · ${flags} · video frames ${show(value.totalVideoFrames)} · dropped frames ${show(value.droppedVideoFrames)} · programmatic pauses ${show(value.programPauseCalls)} · stale waits ${show(value.ignoredStaleWaiting)} · seek ${show(value.autoSeekCalls)}${last}`;
 }

@@ -76,17 +76,17 @@ export function createModuleCRoutes(config, broker, auth, { json, readJson, ...o
         operator(request); const body = await readJson(request);
         json(response, 200, moduleC.resolve(path.split('/')[4], body.action));
       } else {
-        if (!auth.viewer(request)) fail('请输入演播室访问码。', 401);
+        if (!auth.viewer(request)) fail('Enter the studio access code.', 401);
         const orderPath = /^\/api\/module-c\/orders\/([a-f0-9]{64})(\/(?:verify|proof-message))?$/.exec(path);
         if (request.method === 'GET' && orderPath && !orderPath[2]) json(response, 200, moduleC.view(moduleC.get(orderPath[1])));
         else if (request.method === 'POST') {
-          if (!auth.origin(request)) fail('请求来源不被允许。', 403);
+          if (!auth.origin(request)) fail('This request origin is not allowed.', 403);
           const ip = moduleCClientIp(request, config.trustProxy);
           if (path === '/api/module-c/orders') {
-            if (!createLimiter.allow(ip)) fail('创建订单过快，请稍后再试。', 429);
+            if (!createLimiter.allow(ip)) fail('Orders are being created too quickly. Please try again later.', 429);
             json(response, 201, moduleC.create(await readJson(request)));
           } else if (orderPath?.[2]) {
-            if (!verifyLimiter.allow(ip)) fail('核验过于频繁，请稍后再试。', 429);
+            if (!verifyLimiter.allow(ip)) fail('Too many verification attempts. Please try again later.', 429);
             const body = await readJson(request);
             if (!body || typeof body !== 'object' || Array.isArray(body)
               || Object.keys(body).some(key => !['txHash', 'walletProof'].includes(key))) fail('INVALID_WALLET_PROOF');

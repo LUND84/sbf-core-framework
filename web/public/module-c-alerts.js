@@ -38,7 +38,7 @@ export function ensureAlertSurface(boardElement) {
   let surface = document.getElementById('mc-alerts');
   if (!surface) {
     surface = element(document, 'aside', 'mc-alerts'); surface.id = 'mc-alerts'; surface.hidden = true;
-    surface.setAttribute('aria-label', '确认到账庆典'); surface.setAttribute('aria-live', 'polite');
+    surface.setAttribute('aria-label', 'Payment confirmation celebration'); surface.setAttribute('aria-live', 'polite');
     boardElement.parentElement.append(surface);
   }
   return surface;
@@ -105,7 +105,7 @@ export class PaidAlerts {
     this.surface.dataset.tier = String(event.tierIndex); this.surface.dataset.eventId = event.id;
     this.card.style.setProperty('--mc-alert-color', style.color); this.card.style.setProperty('--mc-alert-second', style.second);
     this.tier.textContent = `TIER 0${event.tierIndex} · ${style.name}`;
-    this.name.textContent = event.name || '匿名观众'; this.name.title = event.name || '匿名观众';
+    this.name.textContent = event.name || 'Anonymous viewer'; this.name.title = event.name || 'Anonymous viewer';
     this.amount.textContent = `${event.amount} U`;
     this.chain.textContent = `${event.symbol ? event.symbol + ' · ' : ''}${event.tokenChain || event.chain || ''} · CA`;
     this.ca.textContent = event.ca; this.ca.title = event.ca;
@@ -113,7 +113,7 @@ export class PaidAlerts {
     if (url !== this.imageUrl) {
       this.imageUrl = url; this.logo.replaceChildren(); this.logo.textContent = '◈';
       if (url) {
-        const image = element(this.document, 'img', ''); image.alt = '代币标志'; image.src = url; image.referrerPolicy = 'no-referrer';
+        const image = element(this.document, 'img', ''); image.alt = 'Token logo'; image.src = url; image.referrerPolicy = 'no-referrer';
         image.addEventListener('error', () => image.remove(), { once: true }); this.logo.append(image);
       }
     }

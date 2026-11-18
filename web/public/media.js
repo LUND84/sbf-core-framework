@@ -68,7 +68,7 @@ export class LivePlayer {
     this.video.addEventListener('waiting', () => this.scheduler.dispatch(Work.WAITING));
     this.video.addEventListener('pause', () => this.scheduler.dispatch(Work.PAUSE));
     this.video.addEventListener('error', () => {
-      if (this.source && this.video.error) this.fail(`浏览器解码失败（代码 ${this.video.error.code}）`);
+      if (this.source && this.video.error) this.fail(`Browser decoding failed (code ${this.video.error.code})`);
     });
     // Observe decoder events without requiring frame callbacks for playback.
     // Reason: MSE/native progress drives scheduling even when requestVideoFrameCallback is unavailable or throttled.
@@ -101,7 +101,7 @@ export class LivePlayer {
     if (work & Work.MEDIA) {
       if (this.mediaBuffer.step(this.video.currentTime, this.keepSeconds) === 'quota') {
         this.applyGoLive(true);
-        if (!this.mediaBuffer.trim(this.video.currentTime, 3)) this.fail('浏览器的视频缓冲空间不足，请重新连接。');
+        if (!this.mediaBuffer.trim(this.video.currentTime, 3)) this.fail('The browser video buffer is full. Please reconnect.');
       }
     }
   }
@@ -193,7 +193,7 @@ export class LivePlayer {
     // Reason: the queued pause event must not be the only opportunity to distinguish background interruption from manual intent.
     this.visibilityHidden = true; this.visibilitySuspended = true;
     this.autoPaused = true; this.bufferingMode = 'rebuffer';
-    this.setState('buffering', '浏览器暂停了后台播放，允许播放时自动继续。');
+    this.setState('buffering', 'The browser paused background playback. Playback will resume automatically when allowed.');
     return true;
   }
 
@@ -241,7 +241,7 @@ export class LivePlayer {
       this.targetDelay = policy.targetSeconds; this.lowWaterSeconds = policy.lowWaterSeconds;
       this.maxLagSeconds = policy.maxLagSeconds;
     } catch {
-      this.fail('视频播放策略无效，请重新连接并核对视频源。');
+      this.fail('Invalid video playback policy. Reconnect and check the video source.');
       return;
     }
     this.chunkAssembler = meta.transport === 'fmp4-chunks' ? new Fmp4ChunkAssembler() : null;
@@ -249,7 +249,7 @@ export class LivePlayer {
     this.observationStartedAt = performance.now();
     this.epoch = meta.epoch;
     if (!window.MediaSource || !MediaSource.isTypeSupported(meta.mime || '')) {
-      this.fail('此浏览器不支持当前视频格式。请使用较新的 Chrome 或 Edge。');
+      this.fail('This browser does not support the current video format. Use a recent version of Chrome or Edge.');
       return;
     }
     const generation = this.generation;
@@ -258,7 +258,7 @@ export class LivePlayer {
     this.objectUrl = URL.createObjectURL(source);
     this.video.src = this.objectUrl;
     this.setState('buffering');
-    this.onLog(`切换视频批次 ${String(meta.epoch)}；等待初始化片段。`);
+    this.onLog(`Switching to video session ${String(meta.epoch)}; waiting for the initialization segment.`);
     source.addEventListener('sourceopen', () => {
       if (generation !== this.generation) return;
       try {
@@ -267,12 +267,12 @@ export class LivePlayer {
         this.mediaBuffer.attach(this.buffer);
         this.pump();
       } catch (error) {
-        this.fail(`无法初始化播放器：${error.message}`);
+        this.fail(`Could not initialize the player: ${error.message}`);
       }
     }, { once: true });
     source.addEventListener('sourceclose', () => {
       if (generation === this.generation && !this.disposed) {
-        this.fail('播放器连接已关闭，请重新连接。');
+        this.fail('The player connection is closed. Please reconnect.');
       }
     });
   }
@@ -284,7 +284,7 @@ export class LivePlayer {
       try {
         for (const segment of this.chunkAssembler.push(data)) this.appendSegment(segment);
       } catch (error) {
-        this.fail(`视频分块重组失败：${error.message}`);
+        this.fail(`Could not reassemble video chunks: ${error.message}`);
       }
     } else this.appendSegment(data);
   }
@@ -294,17 +294,17 @@ export class LivePlayer {
     const kind = mp4FragmentKind(data);
     if (!this.receivedInit) {
       if (kind !== 'init') {
-        this.fail('未收到视频初始化片段。请重新连接以同步视频。');
+        this.fail('No video initialization segment was received. Reconnect to synchronize the video.');
         return;
       }
       this.receivedInit = true;
-      this.onLog('已收到 fMP4 初始化片段。');
+      this.onLog('Received the fMP4 initialization segment.');
     } else if (kind === 'init') {
-      this.fail('收到未重置的视频初始化片段。请重新连接。');
+      this.fail('Received a video initialization segment without a reset. Please reconnect.');
       return;
     }
     if (kind === 'unknown') {
-      this.fail('收到无法识别的 fMP4 片段。');
+      this.fail('Received an unrecognized fMP4 segment.');
       return;
     }
     this.receivedBytes += data.byteLength;
@@ -419,8 +419,8 @@ export class LivePlayer {
   }
 
   bufferingDetail() {
-    return this.bufferingMode === 'startup' ? `正在积累约 ${this.targetDelay} 秒播放缓冲。`
-      : `缓冲偏低，积累约 ${this.targetDelay} 秒后自动继续。`;
+    return this.bufferingMode === 'startup' ? `Building approximately ${this.targetDelay} s of playback buffer.`
+      : `The buffer is low. Playback will resume after approximately ${this.targetDelay} s have buffered.`;
   }
 
   manualPauseObserved() {
@@ -489,13 +489,13 @@ export class LivePlayer {
         if (pending.hiddenResume && this.visibilityResumeIntent && !userInitiated) {
           this.visibilitySuspended = true; this.autoPaused = true;
           this.bufferingMode = this.hasPlayed ? 'rebuffer' : 'startup';
-          this.setState('buffering', '浏览器限制后台播放，返回页面后自动重试。');
+          this.setState('buffering', 'The browser restricts background playback. Playback will retry when you return to the page.');
         } else {
           this.playBlocked = true;
-          this.setState('blocked', '浏览器需要点击后才允许播放。');
+          this.setState('blocked', 'Click to allow playback in your browser.');
         }
       } else {
-        this.fail(`无法播放：${error.message}`);
+        this.fail(`Could not play: ${error.message}`);
       }
     } finally {
       if (this.playPending === pending) {

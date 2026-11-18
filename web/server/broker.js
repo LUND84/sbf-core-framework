@@ -217,8 +217,8 @@ export class Broker extends EventEmitter {
       this.worker = null;
       this.workerInfo = { connected: false, engine: null, mode: null };
       this.interrupting = false; this.interruptCommandId = null;
-      if (this.local) { this.local.producerLost?.(); this.failProducer('GPU旧连接已退出，未完成生成已清理。'); }
-      else this.failAll('GPU旧连接已退出，未完成生成已清理。');
+      if (this.local) { this.local.producerLost?.(); this.failProducer('The previous GPU connection has closed. Unfinished generations have been cleared.'); }
+      else this.failAll('The previous GPU connection has closed. Unfinished generations have been cleared.');
     }
     this.worker = socket;
     this.workerInfo = { connected: true, engine: null, mode: null };
@@ -245,8 +245,8 @@ export class Broker extends EventEmitter {
       this.workerInfo = { connected: false, engine: null, mode: null };
       if (this.local) {
         this.local.producerLost?.();
-        this.failProducer('GPU 连接已断开，请等待重新连接后发送。');
-      } else { this.resetMedia(); this.failAll('GPU 连接已断开，请等待重新连接后发送。'); }
+        this.failProducer('The GPU connection has closed. Please wait for it to reconnect before sending a message.');
+      } else { this.resetMedia(); this.failAll('The GPU connection has closed. Please wait for it to reconnect before sending a message.'); }
       this.publishStatus();
     });
   }
@@ -283,7 +283,7 @@ export class Broker extends EventEmitter {
         if (directActor ? (!this.config.continuousActorEnabled || message.mode !== 'avatar')
           : this.local ? (message.mediaMode !== this.localMode || message.mode !== 'avatar')
             : ['sealed-replies', 'streamed-replies-v1'].includes(message.mediaMode)) {
-          this.chatEvent({ role: 'system', status: 'error', text: 'GPU媒体模式与推流服务器不兼容，请更新配置后重连。' });
+          this.chatEvent({ role: 'system', status: 'error', text: 'The GPU media mode is incompatible with the streaming server. Please update the configuration and reconnect.' });
           throw new Error('Incompatible worker media mode');
         }
         this.workerInfo = {
@@ -307,7 +307,7 @@ export class Broker extends EventEmitter {
         if (this.local) {
           this.local.sourceLost?.(this.current?.id);
           if (this.current && !this.local.hasReply(this.current.id)) this.local.cancel({ id: this.current.id });
-          this.failProducer('GPU回复源已重置，待机画面继续播放。'); this.publishStatus(); break;
+          this.failProducer('The GPU reply source has reset. Standby playback will continue.'); this.publishStatus(); break;
         }
         if (typeof message.epoch !== 'string' || !message.epoch || message.epoch.length > 128
           || typeof message.mime !== 'string' || message.mime.length > 160
@@ -341,10 +341,10 @@ export class Broker extends EventEmitter {
         if (this.local) {
           this.local.sourceLost?.(this.current?.id);
           if (this.current && !this.local.hasReply(this.current.id)) this.local.cancel({ id: this.current.id });
-          this.failProducer('GPU回复暂时不可用，待机画面继续播放。');
+          this.failProducer('GPU replies are temporarily unavailable. Standby playback will continue.');
         }
         else this.stream.ready = false;
-        this.chatEvent({ role: 'system', text: String(message.message || 'GPU 服务错误'), status: 'error' });
+        this.chatEvent({ role: 'system', text: String(message.message || 'GPU service error'), status: 'error' });
         this.emit('workerError', String(message.message || 'GPU service error'));
         this.publishStatus();
         break;
@@ -367,7 +367,7 @@ export class Broker extends EventEmitter {
             && (this.workerInfo.replyPipeline || message.id !== undefined)) break;
         this.interrupting = false;
         this.interruptCommandId = null;
-        if (message.status === 'error') this.failProducer('GPU未确认停止完成，请稍后重试。');
+        if (message.status === 'error') this.failProducer('The GPU did not confirm that the reply has stopped. Please try again later.');
         else this.dispatch();
         this.publishStatus();
         break;
@@ -408,20 +408,20 @@ export class Broker extends EventEmitter {
 
   submit(text, metadata = {}) {
     if (this.interrupting) {
-      throw Object.assign(new Error('正在停止上一条回复，请稍后发送。'), { statusCode: 409 });
+      throw Object.assign(new Error('The previous reply is still stopping. Please wait before sending another message.'), { statusCode: 409 });
     }
     if (!this.generationReady()) {
-      throw Object.assign(new Error('GPU 视频服务尚未就绪。'), { statusCode: 503 });
+      throw Object.assign(new Error('The GPU video service is not ready yet.'), { statusCode: 503 });
     }
     if (this.workerInfo.mode !== 'avatar') {
-      throw Object.assign(new Error('当前为连接测试画面，不能生成数字人回复。'), { statusCode: 409 });
+      throw Object.assign(new Error('The current source is a connection test and cannot generate avatar replies.'), { statusCode: 409 });
     }
     // Verified paid ingress reserves its own bounded pending capacity.
     // Reason: a full X queue must not force paid outbox delivery to miss the next actor slot; ordinary ingress still counts all pending work.
     const queued = metadata.source === 'paid-message'
       ? this.pending.filter(request => request.source === 'paid-message').length : this.pending.length;
     if (queued >= this.config.maxQueue) {
-      throw Object.assign(new Error('等待队列已满，请稍后发送。'), { statusCode: 429 });
+      throw Object.assign(new Error('The queue is full. Please try again later.'), { statusCode: 429 });
     }
     const request = this.createRequest(text, metadata);
     this.autonomous.warm.clear();
@@ -453,7 +453,7 @@ export class Broker extends EventEmitter {
     this.current = this.pending.shift();
     this.activeJobs.set(this.current.id, this.current);
     if (!this.send(this.worker, { type: 'chat.request', ...this.current })) {
-      this.failProducer('GPU 连接不可用。');
+      this.failProducer('The GPU connection is unavailable.');
       return;
     }
     const generationId = this.current.id;
@@ -463,7 +463,7 @@ export class Broker extends EventEmitter {
       this.interruptCommandId = randomUUID();
       this.send(this.worker, { type: 'interrupt', id: this.interruptCommandId, request_id: generationId });
       this.local?.cancel({ id: generationId });
-      this.finishLocalJob(generationId, { id: generationId, role: 'system', status: 'error', text: '本次生成超时，已停止该回复。' });
+      this.finishLocalJob(generationId, { id: generationId, role: 'system', status: 'error', text: 'This generation timed out and the reply has been stopped.' });
       this.publishStatus();
     }, this.config.chatTimeoutMs);
     this.timer.unref?.();
@@ -485,7 +485,7 @@ export class Broker extends EventEmitter {
   finishLocalJob(id, terminal = null) {
     if (!this.activeJobs.has(id)) return false;
     if (terminal && !this.activeJobs.get(id).rejectionPending) this.chatEvent({ id, role: 'system', text: terminal.status === 'error'
-      ? '回复未完成，已继续待机。' : '', ...terminal });
+      ? 'The reply did not complete. Standby playback has resumed.' : '', ...terminal });
     this.activeJobs.delete(id);
     if (this.current?.id === id) this.clearCurrent();
     this.dispatch(); this.publishStatus(); return true;
@@ -540,7 +540,7 @@ export class Broker extends EventEmitter {
     if (this.workerInfo.connected) this.send(this.worker, { type: 'interrupt', id: this.interruptCommandId });
     this.local?.cancel({ all: true });
     for (const request of [...this.activeJobs.values(), ...this.pending]) {
-      if (!request.rejectionPending) this.chatEvent({ id: request.id, role: 'system', text: '已停止回复。', status: 'interrupted' });
+      if (!request.rejectionPending) this.chatEvent({ id: request.id, role: 'system', text: 'The reply has been stopped.', status: 'interrupted' });
     }
     this.pending = [];
     this.clearCurrent();

@@ -1,9 +1,9 @@
 import { PaidAlerts } from './module-c-alerts.js';
 
 const interactionLabels = {
-  queued: '等待主播回应', waiting: '等待主播回应', pending: '等待主播回应',
-  dispatching: '正在提交给主播', running: '主播正在回应', needs_review: '回应待人工处理',
-  done: '主播已回应', completed: '主播已回应', error: '回应待处理', interrupted: '回应已停止',
+  queued: 'Waiting for the host', waiting: 'Waiting for the host', pending: 'Waiting for the host',
+  dispatching: 'Submitting to the host', running: 'The host is responding', needs_review: 'Response requires manual review',
+  done: 'The host has responded', completed: 'The host has responded', error: 'Response needs attention', interrupted: 'Response stopped',
 };
 
 export function timestamp(value) {
@@ -19,7 +19,7 @@ export function countdown(expiresAt, now = Date.now()) {
 }
 
 export function interactionLabel(state) {
-  return interactionLabels[state] || '等待主播回应';
+  return interactionLabels[state] || 'Waiting for the host';
 }
 
 function node(document, tag, className, value) {
@@ -75,8 +75,8 @@ export class PaidBoard {
     this.times = [];
     this.element.hidden = entries.length === 0;
     if (!entries.length) return;
-    const heading = node(this.document, 'div', 'mc-board-heading', '付费留言');
-    heading.append(node(this.document, 'span', 'mc-board-count', `${entries.length} 条`));
+    const heading = node(this.document, 'div', 'mc-board-heading', 'Paid messages');
+    heading.append(node(this.document, 'span', 'mc-board-count', `${entries.length} ${entries.length === 1 ? 'message' : 'messages'}`));
     this.element.append(heading);
     const list = node(this.document, 'div', 'mc-board-list');
     for (const entry of entries) {
@@ -86,14 +86,14 @@ export class PaidBoard {
       const url = safeLogo(entry.logoUrl, this.origin);
       if (url) {
         const image = node(this.document, 'img', '');
-        image.alt = '代币标志';
+        image.alt = 'Token logo';
         image.src = url;
         image.loading = 'lazy';
         image.referrerPolicy = 'no-referrer';
         image.addEventListener('error', () => image.remove(), { once: true });
         logo.append(image);
       }
-      const name = node(this.document, 'strong', 'mc-card-name', entry.name || '匿名观众');
+      const name = node(this.document, 'strong', 'mc-card-name', entry.name || 'Anonymous viewer');
       const amount = node(this.document, 'span', 'mc-card-amount', `${entry.amount} U`);
       header.append(logo, name, amount);
       const chain = node(this.document, 'span', 'mc-card-chain', `${entry.tokenChain || entry.chain} · CA`);
@@ -102,7 +102,7 @@ export class PaidBoard {
       const message = node(this.document, 'p', 'mc-card-message', entry.message || '');
       const footer = node(this.document, 'div', 'mc-card-footer');
       const time = node(this.document, 'span', 'mc-card-time');
-      time.setAttribute('aria-label', '剩余展示时间');
+      time.setAttribute('aria-label', 'Remaining display time');
       footer.append(node(this.document, 'span', '', interactionLabel(entry.interactionState)), time);
       this.times.push({ element: time, expiresAt: entry.expiresAt });
       card.append(header, chain, ca, message, footer);

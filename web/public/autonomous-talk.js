@@ -10,31 +10,31 @@ export class AutonomousTalkControl {
     const worker = status.worker || {};
     const enabled = auto.enabled === true;
     const supported = online && worker.connected && worker.mode === 'avatar' && worker.autonomousCrypto === true;
-    this.button.textContent = `${enabled ? '暂停' : '开始'} Crypto 自言自语`;
+    this.button.textContent = `${enabled ? 'Pause' : 'Start'} crypto commentary`;
     this.button.disabled = this.pending || !authenticated || (!enabled && !supported);
     this.button.setAttribute('aria-pressed', String(enabled));
     this.button.setAttribute('aria-busy', String(this.pending));
     this.button.dataset.state = enabled ? 'enabled' : 'disabled';
-    let label = '已暂停';
-    let detail = '持续聊 Crypto，弹幕回复优先。暂停后当前段说完。';
-    if (!authenticated) label = '需要访问码';
-    else if (!online) label = '实时连接已断开';
-    else if (!worker.connected) label = '设备离线';
-    else if (worker.autonomousCrypto !== true || worker.mode !== 'avatar') label = '设备暂不支持';
+    let label = 'Paused';
+    let detail = 'Continuous crypto commentary, with chat replies taking priority. Pausing lets the current segment finish.';
+    if (!authenticated) label = 'Access code required';
+    else if (!online) label = 'Live connection lost';
+    else if (!worker.connected) label = 'Device offline';
+    else if (worker.autonomousCrypto !== true || worker.mode !== 'avatar') label = 'Not supported by this device';
     else if (auto.state === 'error') {
-      label = '生成异常 · 已暂停';
-      detail = auto.lastError || '请检查设备状态后重试。';
+      label = 'Generation error · paused';
+      detail = auto.lastError || 'Check the device status and try again.';
     } else if (enabled) {
       const busy = status.queue?.current || status.queue?.active || status.queue?.pending;
-      label = auto.state === 'generating' ? '主动讲话中'
-        : auto.state === 'cooldown' ? '准备下一段'
-        : busy ? '等待弹幕回复完成'
+      label = auto.state === 'generating' ? 'Speaking'
+        : auto.state === 'cooldown' ? 'Preparing the next segment'
+        : busy ? 'Waiting for the chat reply to finish'
         : worker.mediaMode === 'continuous-actor-v1' && status.actorSource?.ready !== true
-          ? '等待视频源恢复' : '等待生成就绪';
+          ? 'Waiting for the video source to recover' : 'Waiting for generation to be ready';
       const completed = Number.isInteger(auto.completed) && auto.completed >= 0 ? auto.completed : 0;
-      detail = `${auto.topic ? `${auto.topic} · ` : ''}已完成 ${completed} 段 · 暂停后当前段说完。`;
+      detail = `${auto.topic ? `${auto.topic} · ` : ''}${completed} segments completed · pausing lets the current segment finish.`;
     }
-    if (this.pending) label = enabled ? '正在暂停' : '正在开启';
+    if (this.pending) label = enabled ? 'Pausing' : 'Starting';
     this.state.textContent = label;
     this.detail.textContent = detail;
   }
@@ -49,10 +49,10 @@ export class AutonomousTalkControl {
         method: 'POST', body: JSON.stringify({ enabled }),
       });
       this.applyStatus({ autonomous });
-      this.toast(enabled ? 'Crypto 自言自语已开启，弹幕回复优先。' : '已暂停后续生成，当前段说完后暂停。');
+      this.toast(enabled ? 'Crypto commentary started. Chat replies take priority.' : 'Further generation is paused. The current segment will finish first.');
     } catch (error) {
-      this.toast(error.message || '操作失败，请重试。');
-      this.log(`Crypto 自言自语操作失败：${error.message}`);
+      this.toast(error.message || 'The operation failed. Please try again.');
+      this.log(`Crypto commentary control failed: ${error.message}`);
     } finally {
       this.pending = false;
       this.render(this.getContext());

@@ -51,40 +51,40 @@ export function createApp(config, options = {}) {
       }
       if (request.method === 'GET' && path === '/api/playback-report') {
         // Operator reads require the worker bearer, never the shared viewer cookie. Reason: one viewer must not inspect other tabs' reports.
-        if (!auth.worker(request)) return json(response, 401, { error: '需要运维验证。' });
+        if (!auth.worker(request)) return json(response, 401, { error: 'Operator authentication is required.' });
         return json(response, 200, playbackReports.snapshot());
       }
       if (request.method === 'GET' && path === '/api/status') return json(response, 200, broker.status());
       if (request.method === 'GET' && path === '/api/auth') return json(response, 200,
         { authenticated: auth.viewer(request), authRequired: Boolean(config.accessCode) });
       if (request.method === 'GET' && path === '/api/media') {
-        if (!auth.viewer(request)) return json(response, 401, { error: '请输入演示访问码。' });
+        if (!auth.viewer(request)) return json(response, 401, { error: 'Please enter the demo access code.' });
         return broker.attachHttpViewer(response);
       }
       if (request.method === 'GET' && path === '/healthz') return json(response, 200, { ok: true });
       if (request.method === 'POST' && path.startsWith('/api/')) {
-        if (!auth.origin(request)) return json(response, 403, { error: '请求来源不被允许。' });
+        if (!auth.origin(request)) return json(response, 403, { error: 'This request origin is not allowed.' });
         const ip = request.socket.remoteAddress || 'unknown';
         if (path === '/api/login') {
-          if (!loginLimiter.allow(ip)) return json(response, 429, { error: '尝试次数过多，请稍后再试。' });
+          if (!loginLimiter.allow(ip)) return json(response, 429, { error: 'Too many attempts. Please try again later.' });
           const body = await readJson(request);
           const cookie = auth.login(body.code, auth.isSecure(request));
-          if (!cookie) return json(response, 401, { error: '访问码不正确。' });
+          if (!cookie) return json(response, 401, { error: 'The access code is incorrect.' });
           response.setHeader('Set-Cookie', cookie);
           return json(response, 200, { ok: true });
         }
-        if (!auth.viewer(request)) return json(response, 401, { error: '请输入演示访问码。' });
+        if (!auth.viewer(request)) return json(response, 401, { error: 'Please enter the demo access code.' });
         if (path === '/api/playback-report') {
           playbackReports.add(await readJson(request), broker.status());
           return json(response, 202, { ok: true });
         }
         if (path === '/api/chat') {
           if (config.webChatEnabled === false) return json(response, 403, { error: 'WEB_CHAT_DISABLED' });
-          if (!chatLimiter.allow(ip)) return json(response, 429, { error: '发送过快，请稍后再试。' });
+          if (!chatLimiter.allow(ip)) return json(response, 429, { error: 'Messages are being sent too quickly. Please try again later.' });
           const body = await readJson(request);
           if (typeof body.text !== 'string' || !body.text.trim()
             || body.text.trim().length > config.maxTextLength) {
-            return json(response, 400, { error: `请输入 1–${config.maxTextLength} 字的内容。` });
+            return json(response, 400, { error: `Please enter between 1 and ${config.maxTextLength} characters.` });
           }
           return json(response, 202, broker.submit(body.text.trim()));
         }
@@ -94,18 +94,18 @@ export function createApp(config, options = {}) {
           return json(response, 200, { ok: true });
         }
         if (path === '/api/autonomous') {
-          if (!chatLimiter.allow(ip)) return json(response, 429, { error: '操作过快，请稍后再试。' });
+          if (!chatLimiter.allow(ip)) return json(response, 429, { error: 'Too many requests. Please try again later.' });
           const body = await readJson(request);
-          if (typeof body.enabled !== 'boolean') return json(response, 400, { error: 'enabled 必须为布尔值。' });
+          if (typeof body.enabled !== 'boolean') return json(response, 400, { error: 'enabled must be a boolean.' });
           return json(response, 200, broker.autonomous.setEnabled(body.enabled));
         }
-        return json(response, 404, { error: '接口不存在。' });
+        return json(response, 404, { error: 'Endpoint not found.' });
       }
       if (request.method !== 'GET' && request.method !== 'HEAD') return json(response, 405, { error: 'Method not allowed' });
       await serveFile(path, request, response);
     } catch (error) {
       if (!response.headersSent) json(response, error.statusCode || 500,
-        { error: error.statusCode ? error.message : '服务暂时不可用。' });
+        { error: error.statusCode ? error.message : 'The service is temporarily unavailable.' });
       else response.destroy();
     }
   });
@@ -170,14 +170,14 @@ async function readJson(request) {
   let length = 0;
   for await (const chunk of request) {
     length += chunk.length;
-    if (length > 8192) throw Object.assign(new Error('请求内容过长。'), { statusCode: 413 });
+    if (length > 8192) throw Object.assign(new Error('The request body is too large.'), { statusCode: 413 });
     chunks.push(chunk);
   }
   try {
     const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error();
     return body;
-  } catch { throw Object.assign(new Error('请求 JSON 格式无效。'), { statusCode: 400 }); }
+  } catch { throw Object.assign(new Error('The request contains invalid JSON.'), { statusCode: 400 }); }
 }
 
 async function serveFile(path, request, response) {

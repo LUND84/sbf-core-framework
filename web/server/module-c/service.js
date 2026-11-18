@@ -56,7 +56,7 @@ export class ModuleC {
       paymentMode: 'exact-wallet-v1', gasPaidBy: 'payer',
       secondsPer20: pricing.tiers[0].durationSeconds, displaySlots: 3,
       videoOverlay: this.config.videoOverlay,
-      reason: this.config.enabled ? undefined : '收款尚未启用。',
+      reason: this.config.enabled ? undefined : 'Payments are not enabled.',
       chains: Object.entries(this.config.chains).map(([id, c]) => ({ id, label: c.label, asset: c.asset,
         recipient: c.recipient, decimals: c.decimals, enabled: c.enabled, tokenAddress: c.tokenAddress })) };
   }
@@ -93,7 +93,7 @@ export class ModuleC {
     const ca = normalizeAddress(tokenChain, body.ca);
     if (typeof body.message !== 'string' || !body.message.trim() || body.message.trim().length > 1000
       || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(body.message)) fail('INVALID_MESSAGE');
-    const name = body.name || '匿名观众';
+    const name = body.name || 'Anonymous viewer';
     if (typeof name !== 'string' || name.length > 40 || /[\u0000-\u001f\u007f<>]/u.test(name)) fail('INVALID_NAME');
     const pricing = this.pricing.get(), base = priceUnits(body.amount);
     let tier;
@@ -119,7 +119,7 @@ export class ModuleC {
       paymentMode: 'exact-wallet-v1',
       tierId: tier.id, pricingRevision: pricing.revision,
       amountAtomic: String(exact), payAmount: formatUnits(exact, c.decimals),
-      message: body.message.trim(), name: name.trim() || '匿名观众',
+      message: body.message.trim(), name: name.trim() || 'Anonymous viewer',
       createdAt: now, expiresAt: now + this.config.orderTtlMs, state: 'awaiting_payment',
       interactionState: 'waiting', deliveryAttempt: 0, durationMs: tier.durationSeconds * 1000, token: {} };
     this.store.put(order); return this.view(order);

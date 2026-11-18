@@ -48,7 +48,7 @@ export class LocalRelay {
         if (this.closed) return;
         const code = safeCode(error); this.lifetime.scheduler_faults_total++; this.lifetime.last_fault_code = code;
         this.cancel({ all: true, allowDrain: false });
-        this.broker.failAll('本地播放调度暂停，正在恢复待机。');
+        this.broker.failAll('Local playback scheduling has paused. Restoring standby playback.');
         // Bound genuine fault recovery to four attempts/second. Reason: a persistent sink/config failure must not create an immediate epoch-reset/event-loop storm.
         this.recoveryTimer = (this.options.schedule || setTimeout)(() => {
           this.recoveryTimer = null;
@@ -90,7 +90,7 @@ export class LocalRelay {
     this.rejected++; this.broker.send(this.broker.worker, { type: 'reply.clip.rejected', id, code });
     if (failCurrent) {
       this.cancel({ id });
-      const terminal = { id, role: 'system', status: 'error', text: '回复片段无法接入，已继续待机。', error: code };
+      const terminal = { id, role: 'system', status: 'error', text: 'The reply clip could not be loaded. Standby playback has resumed.', error: code };
       if (typeof this.broker.rejectLocalJob === 'function') this.broker.rejectLocalJob(id, terminal);
       else this.finish(id, terminal);
     }

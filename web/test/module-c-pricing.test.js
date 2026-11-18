@@ -134,7 +134,7 @@ test('configuration separates pricing from the ledger and rejects reused worker 
   assert.throws(() => readModuleCConfig({ MODULE_C_DATA_FILE: dataFile, MODULE_C_PRICING_DATA_FILE: dataFile }), /MUST_BE_SEPARATE/);
   assert.throws(() => readModuleCConfig({ MODULE_C_PRICING_DATA_FILE: 'relative.json' }), /ABSOLUTE_PRICING/);
   assert.throws(() => readModuleCConfig({ MODULE_C_DATA_FILE: dataFile, MODULE_C_PRICING_DATA_FILE: join(path, 'other', 'pricing.json') }), /SHARE_STATE_DIRECTORY/);
-  for (const value of ['a', 'a'.repeat(31), 'a'.repeat(513), 'a'.repeat(31) + ' ', '密'.repeat(32)]) {
+  for (const value of ['a', 'a'.repeat(31), 'a'.repeat(513), 'a'.repeat(31) + ' ', '\u5bc6'.repeat(32)]) {
     assert.throws(() => readModuleCConfig({ MODULE_C_DATA_FILE: dataFile, MODULE_C_ADMIN_TOKEN: value }), /ADMIN_TOKEN/);
   }
   for (const value of ['a'.repeat(32), 'a'.repeat(512)]) {

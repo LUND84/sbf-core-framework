@@ -11,82 +11,82 @@ const defaultChains = [
 ];
 const paidStates = new Set(['paid', 'confirmed']);
 const knownErrors = {
-  MODULE_C_DISABLED: '模块 C 尚未配置收款，暂不可创建订单。',
-  MODULE_C_NOT_CONFIGURED: '模块 C 尚未配置收款，暂不可创建订单。',
-  MODULE_C_PAYMENT_NOT_CONFIGURED: '尚未配置收款地址，暂不可创建订单。',
-  ORDER_NOT_FOUND: '找不到这条订单，可能已过期清理。',
-  TX_NOT_FOUND: '暂未查到这笔交易，请核对交易哈希并稍后重试。',
-  TX_ALREADY_USED: '这笔交易已用于其他订单，请检查付款记录。',
-  INVALID_AMOUNT: '请选择当前可用的留言档位。',
-  INVALID_CA: '请填写代币所属链上的有效 CA 地址。',
-  ORIGIN_NOT_ALLOWED: '页面来源校验失败，请从正式演播室页面重新进入。',
-  MODULE_C_CLOSED: '收款服务正在重启，请稍后刷新原订单，无需重复付款。',
-  MODULE_C_SERVICE_UNAVAILABLE: '收款服务暂不可用，请稍后刷新原订单。',
-  MODULE_C_QUERY_NOT_ALLOWED: '订单地址格式无效，请从演播室重新打开付费留言。',
-  MODULE_C_NOT_FOUND: '找不到这条订单或付费留言接口，请刷新后重试。',
-  MODULE_C_STORE_INVALID: '订单存储需要管理员处理，暂不可收款。',
-  MODULE_C_STORE_LOCKED: '订单服务正在维护，暂不可收款。',
-  INVALID_ORDER: '订单内容无效，请检查各项后重新创建。',
-  INVALID_TOKEN_CHAIN: '请选择要展示的代币所属链。',
-  INVALID_ADDRESS: 'CA 地址无效，请核对地址与所选代币所属链。',
-  INVALID_MESSAGE: '请填写 1–1000 字的留言，并去除不可见控制字符。',
-  INVALID_NAME: '昵称最多 40 字，请去除尖括号和不可见控制字符。',
-  INVALID_AMOUNT_PRECISION: '档位金额无效，请刷新配置后重新选择。',
-  AMOUNT_MUST_BE_20_TO_100000: '留言金额与当前收费档位不符，请重新选择。',
-  PRICING_REVISION_CONFLICT: '收费档位已更新，请重新选择并确认价格与停留时间。',
-  INVALID_ORDER_PRICING: '收费档位信息不完整，请刷新配置后重新选择。',
-  INVALID_PRICING_TIER: '此档位暂不可用，请重新选择并确认。',
-  ORDER_PRICE_MISMATCH: '档位价格已变化，请重新选择并确认。',
-  AMOUNT_MUST_MATCH_PRICING_TIER: '请选择当前可用的收费档位，金额须与档位一致。',
-  TIER_NOT_AVAILABLE: '此档位暂不可用，请重新选择并确认。',
-  PRICE_MISMATCH: '档位价格已变化，请重新选择并确认。',
-  ORDER_CAPACITY_REACHED: '当前订单较多，暂不可创建新订单，请稍后再试。',
-  PAYMENT_AMOUNT_CAPACITY: '当前档位订单较多，请稍后再试或改选其他档位。',
-  INVALID_TX_HASH: '交易哈希格式无效，请粘贴完整的付款交易哈希。',
-  PAYMENT_INVALID_TX_HASH: '交易哈希格式与付款网络不符，请核对完整交易哈希。',
-  ORDER_TRANSACTION_ALREADY_BOUND: '此订单已绑定另一笔交易，请使用原交易哈希验证；需要更换时请联系管理员。',
-  TRANSACTION_ALREADY_USED: '这笔交易已用于另一条订单，不能重复使用。',
-  ORDER_EXPIRED: '订单已过期，请勿再付款；若到期前已转账，仍可提交交易哈希核验。',
-  PAYMENT_CHAIN_UNAVAILABLE: '该付款网络暂不可用，请选择其他已配置网络或稍后重试。',
-  PAYMENT_RPC_UNAVAILABLE: '链上查询暂不可用，请稍后重新验证原交易，无需重复付款。',
-  PAYMENT_RPC_INVALID_RESPONSE: '链上查询返回异常，请稍后重新验证原交易，无需重复付款。',
-  PAYMENT_WRONG_NETWORK: '当前付款网络校验未通过，请联系管理员处理，无需重复付款。',
-  PAYMENT_OUTSIDE_ORDER_WINDOW: '该交易时间不在订单有效期内，请保留交易哈希联系管理员。',
-  PAYMENT_TRANSFER_NOT_FOUND: '这笔交易没有向指定收款地址转入所需稳定币，请核对付款网络、币种和地址。',
-  PAYMENT_AMBIGUOUS_PAYER: '这笔交易包含多个来源，无法自动核验，请保留交易哈希联系管理员。',
-  PAYMENT_TRANSACTION_FAILED: '这笔链上交易执行失败，未完成付款，请核对钱包交易记录。',
-  PAYMENT_AMOUNT_MISMATCH: '实际到账数量与订单要求不一致，请核对全部小数位和手续费，保留交易哈希联系管理员。',
-  PAYMENT_UNSUPPORTED_TRANSFER: '这笔转账方式无法自动核验，请保留交易哈希联系管理员。',
-  PAYMENT_UNSUPPORTED_CHAIN: '暂不支持该付款网络，请从可用网络中选择。',
-  PAYMENT_INVALID_ORDER: '订单付款信息异常，请保留订单号联系管理员。',
-  INVALID_PAYMENT_PROOF: '付款核验结果异常，请保留订单号和交易哈希联系管理员，无需重复付款。',
-  WALLET_SIGNATURE_REQUIRED: '请使用实际付款的钱包签名认领这笔交易。',
-  INVALID_WALLET_PROOF: '付款钱包签名无效，请使用实际付款的钱包重试。',
-  PAYMENT_PAYER_MISMATCH: '签名钱包与链上转出钱包不一致，请切换到实际付款钱包后重试。',
-  WALLET_UNAVAILABLE: '请在安装了对应钱包扩展的浏览器中打开此页面，再签名认领付款。',
-  WALLET_ACCOUNT_UNAVAILABLE: '未取得钱包账户，请解锁并连接实际付款的钱包。',
-  WALLET_ACCOUNT_CHANGED: '钱包账户发生变化，请切换回实际付款账户后重试。',
-  WALLET_REQUEST_PENDING: '钱包已有待处理请求，请先在钱包中完成或取消该请求。',
-  WALLET_SIGNING_FAILED: '钱包签名未完成，请解锁实际付款钱包后重试。',
-  WALLET_SIGNATURE_INVALID: '钱包未返回有效签名，请重新签名。',
-  WALLET_REQUEST_REJECTED: '已取消钱包签名；付款记录仍保留，可稍后重新认领。',
-  INVALID_WALLET_MESSAGE: '订单签名信息异常，请刷新原订单重试。',
-  ACTOR_NOT_READY: '已收款，等待主播设备就绪，无需重复付款。',
-  DELIVERY_UNCERTAIN_AFTER_RESTART: '已收款，服务重启后的回应状态需要人工处理，无需重复付款。',
-  DISPATCH_OUTCOME_UNCERTAIN: '已收款，主播任务提交结果需要人工处理，无需重复付款。',
-  ACTOR_DELIVERY_UNCERTAIN: '已收款，主播回应结果需要人工处理，无需重复付款。',
+  MODULE_C_DISABLED: 'Payments are not configured for Module C. Orders are currently unavailable.',
+  MODULE_C_NOT_CONFIGURED: 'Payments are not configured for Module C. Orders are currently unavailable.',
+  MODULE_C_PAYMENT_NOT_CONFIGURED: 'No payment address is configured. Orders are currently unavailable.',
+  ORDER_NOT_FOUND: 'Order not found. It may have expired and been removed.',
+  TX_NOT_FOUND: 'Transaction not found yet. Check the transaction hash and try again later.',
+  TX_ALREADY_USED: 'This transaction has already been used for another order. Check your payment history.',
+  INVALID_AMOUNT: 'Select an available message tier.',
+  INVALID_CA: 'Enter a valid contract address on the token network.',
+  ORIGIN_NOT_ALLOWED: 'Page origin verification failed. Reopen this form from the official studio page.',
+  MODULE_C_CLOSED: 'The payment service is restarting. Refresh your existing order later; do not pay again.',
+  MODULE_C_SERVICE_UNAVAILABLE: 'The payment service is temporarily unavailable. Refresh your existing order later.',
+  MODULE_C_QUERY_NOT_ALLOWED: 'Invalid order URL. Reopen paid messages from the studio.',
+  MODULE_C_NOT_FOUND: 'The order or paid-message endpoint was not found. Refresh and try again.',
+  MODULE_C_STORE_INVALID: 'Order storage requires administrator attention. Payments are temporarily unavailable.',
+  MODULE_C_STORE_LOCKED: 'The order service is under maintenance. Payments are temporarily unavailable.',
+  INVALID_ORDER: 'Invalid order details. Check the fields and create a new order.',
+  INVALID_TOKEN_CHAIN: 'Select the network of the token you want to display.',
+  INVALID_ADDRESS: 'Invalid contract address. Check the address and selected token network.',
+  INVALID_MESSAGE: 'Enter a message of 1–1000 characters without invisible control characters.',
+  INVALID_NAME: 'Use a name of up to 40 characters without angle brackets or invisible control characters.',
+  INVALID_AMOUNT_PRECISION: 'Invalid tier amount. Refresh the configuration and select a tier again.',
+  AMOUNT_MUST_BE_20_TO_100000: 'The message amount does not match the current pricing tiers. Select a tier again.',
+  PRICING_REVISION_CONFLICT: 'Pricing has changed. Select a tier again and confirm its price and display duration.',
+  INVALID_ORDER_PRICING: 'Pricing information is incomplete. Refresh the configuration and select a tier again.',
+  INVALID_PRICING_TIER: 'This tier is unavailable. Select another tier and confirm.',
+  ORDER_PRICE_MISMATCH: 'The tier price has changed. Select a tier again and confirm.',
+  AMOUNT_MUST_MATCH_PRICING_TIER: 'Select an available pricing tier. The amount must match the tier price.',
+  TIER_NOT_AVAILABLE: 'This tier is unavailable. Select another tier and confirm.',
+  PRICE_MISMATCH: 'The tier price has changed. Select a tier again and confirm.',
+  ORDER_CAPACITY_REACHED: 'Too many orders are open. Please try creating an order later.',
+  PAYMENT_AMOUNT_CAPACITY: 'This tier has too many open orders. Try again later or choose another tier.',
+  INVALID_TX_HASH: 'Invalid transaction hash. Paste the full payment transaction hash.',
+  PAYMENT_INVALID_TX_HASH: 'The transaction hash format does not match the payment network. Check the full hash.',
+  ORDER_TRANSACTION_ALREADY_BOUND: 'This order is linked to a different transaction. Verify with the original hash, or contact an administrator to change it.',
+  TRANSACTION_ALREADY_USED: 'This transaction has already been used for another order and cannot be reused.',
+  ORDER_EXPIRED: 'This order has expired. Do not send a new payment. If you paid before expiry, you can still submit the transaction hash for verification.',
+  PAYMENT_CHAIN_UNAVAILABLE: 'This payment network is temporarily unavailable. Choose another configured network or try again later.',
+  PAYMENT_RPC_UNAVAILABLE: 'Blockchain queries are temporarily unavailable. Verify the original transaction later; do not pay again.',
+  PAYMENT_RPC_INVALID_RESPONSE: 'The blockchain query returned an invalid response. Verify the original transaction later; do not pay again.',
+  PAYMENT_WRONG_NETWORK: 'Payment network verification failed. Contact an administrator; do not pay again.',
+  PAYMENT_OUTSIDE_ORDER_WINDOW: 'The transaction is outside the order validity window. Keep the transaction hash and contact an administrator.',
+  PAYMENT_TRANSFER_NOT_FOUND: 'This transaction did not transfer the required stablecoin to the specified recipient. Check the payment network, token, and address.',
+  PAYMENT_AMBIGUOUS_PAYER: 'This transaction has multiple senders and cannot be verified automatically. Keep the hash and contact an administrator.',
+  PAYMENT_TRANSACTION_FAILED: 'This blockchain transaction failed and no payment was completed. Check your wallet transaction history.',
+  PAYMENT_AMOUNT_MISMATCH: 'The received amount does not match the order. Check all decimal places and fees, and keep the transaction hash when contacting an administrator.',
+  PAYMENT_UNSUPPORTED_TRANSFER: 'This transfer type cannot be verified automatically. Keep the transaction hash and contact an administrator.',
+  PAYMENT_UNSUPPORTED_CHAIN: 'This payment network is not supported. Choose an available network.',
+  PAYMENT_INVALID_ORDER: 'Invalid order payment details. Keep your order ID and contact an administrator.',
+  INVALID_PAYMENT_PROOF: 'Payment verification returned an invalid result. Keep your order ID and transaction hash, and contact an administrator; do not pay again.',
+  WALLET_SIGNATURE_REQUIRED: 'Sign with the wallet that sent the payment to claim this transaction.',
+  INVALID_WALLET_PROOF: 'Invalid payment-wallet signature. Try again with the wallet that sent the payment.',
+  PAYMENT_PAYER_MISMATCH: 'The signing wallet does not match the on-chain sender. Switch to the wallet that sent the payment and try again.',
+  WALLET_UNAVAILABLE: 'Open this page in a browser with the appropriate wallet extension, then sign to claim your payment.',
+  WALLET_ACCOUNT_UNAVAILABLE: 'No wallet account was provided. Unlock and connect the wallet that sent the payment.',
+  WALLET_ACCOUNT_CHANGED: 'Your wallet account changed. Switch back to the account that sent the payment and try again.',
+  WALLET_REQUEST_PENDING: 'Your wallet has a pending request. Complete or cancel it in your wallet first.',
+  WALLET_SIGNING_FAILED: 'Wallet signing was not completed. Unlock the wallet that sent the payment and try again.',
+  WALLET_SIGNATURE_INVALID: 'The wallet did not return a valid signature. Sign again.',
+  WALLET_REQUEST_REJECTED: 'Wallet signing was canceled. Your payment record is saved, and you can claim it later.',
+  INVALID_WALLET_MESSAGE: 'Invalid order-signing details. Refresh your existing order and try again.',
+  ACTOR_NOT_READY: 'Payment received. Waiting for the host device to become ready; do not pay again.',
+  DELIVERY_UNCERTAIN_AFTER_RESTART: 'Payment received. The response status after the service restart requires manual review; do not pay again.',
+  DISPATCH_OUTCOME_UNCERTAIN: 'Payment received. The host-task submission result requires manual review; do not pay again.',
+  ACTOR_DELIVERY_UNCERTAIN: 'Payment received. The host response requires manual review; do not pay again.',
 };
 
 export function readableError(error) {
   const raw = typeof error === 'string' ? error : error?.message;
-  return knownErrors[raw] || raw || '请求失败，请稍后重试。';
+  return knownErrors[raw] || raw || 'Request failed. Please try again later.';
 }
 
 export function displayDuration(seconds) {
   if (!Number.isSafeInteger(seconds) || seconds < 0) return '—';
   const hours = Math.floor(seconds / 3600), minutes = Math.floor(seconds % 3600 / 60);
-  return [hours ? `${hours} 小时` : '', minutes ? `${minutes} 分钟` : '',
-    seconds % 60 ? `${seconds % 60} 秒` : ''].filter(Boolean).join(' ') || '0 秒';
+  return [hours ? `${hours} h` : '', minutes ? `${minutes} min` : '',
+    seconds % 60 ? `${seconds % 60} s` : ''].filter(Boolean).join(' ') || '0 s';
 }
 
 export function normalizePricing(value) {
@@ -114,30 +114,30 @@ export function orderDisplayDuration(order) {
   if (Number.isSafeInteger(recorded) && recorded >= 0) return displayDuration(Math.floor(recorded / 1000));
   const start = timestamp(order.startsAt), end = timestamp(order.boardExpiresAt);
   return Number.isFinite(start) && Number.isFinite(end) && end >= start
-    ? displayDuration(Math.floor((end - start) / 1000)) : '时长信息待恢复';
+    ? displayDuration(Math.floor((end - start) / 1000)) : 'Waiting for duration information';
 }
 
 export function paymentTokenDetails(order, config) {
   const chain = config?.chains?.find((entry) => entry.id === order.chain);
   return { address: order.tokenAddress || chain?.tokenAddress || '',
     note: order.chain === 'bsc'
-      ? 'Binance-Peg USDT（18 位小数），请核对收款币合约。'
-      : '转账时请核对该稳定币合约 / Mint。' };
+      ? 'Binance-Peg USDT (18 decimals). Check the payment token contract.'
+      : 'Check the stablecoin contract or mint address before sending.' };
 }
 
 export function orderMessage(order) {
   if (paidStates.has(order.state)) {
-    if (timestamp(order.startsAt) > Date.now()) return '已收款，榜单排队展示；从实际展示起计时。主播回应按付费优先队列处理。';
+    if (timestamp(order.startsAt) > Date.now()) return 'Payment received. Your message is queued for display; its timer starts when it appears. Host responses use the paid-message priority queue.';
     if (order.interactionState === 'needs_review' || order.interactionState === 'error') {
-      return '已收款，主播回应需要人工处理。请保留订单号，无需重复付款。';
+      return 'Payment received. The host response requires manual review. Keep your order ID; do not pay again.';
     }
-    if (order.interactionState === 'dispatching') return '已收款，正在提交给主播。付费留言优先互动。';
+    if (order.interactionState === 'dispatching') return 'Payment received. Submitting to the host. Paid messages receive interaction priority.';
     if (order.error === 'ACTOR_NOT_READY') return knownErrors.ACTOR_NOT_READY;
-    return `已收款 · ${interactionLabel(order.interactionState)}。榜单展示以服务器倒计时为准。`;
+    return `Payment received · ${interactionLabel(order.interactionState)}. The server countdown determines the display time.`;
   }
-  if (order.state === 'expired') return '订单已过期，请勿再付款；若到期前已转账，仍可提交交易哈希核验。';
-  if (order.state === 'confirming' || order.state === 'verifying') return '正在等待链上确认。无需重复付款，稍后点击重新验证即可。';
-  return '等待付款。请按下方网络、地址和准确数量转账，完成后提交交易哈希验证。';
+  if (order.state === 'expired') return 'This order has expired. Do not send a new payment. If you paid before expiry, you can still submit the transaction hash for verification.';
+  if (order.state === 'confirming' || order.state === 'verifying') return 'Waiting for blockchain confirmation. Do not pay again; click verify again later.';
+  return 'Awaiting payment. Send the exact amount using the network and address below, then submit the transaction hash for verification.';
 }
 
 export function installModuleC({ document = globalThis.document, fetcher = fetch,
@@ -171,9 +171,9 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
     try { result = await response.json(); } catch { result = {}; }
     if (!response.ok) {
       const detail = typeof result.error === 'string' ? result.error : result.error?.message || result.message;
-      const fallback = response.status === 401 ? '请先输入演播室访问码，再打开付费留言。'
-        : response.status === 404 ? '付费留言服务尚未启用，请稍后再试。'
-          : `请求失败（HTTP ${response.status}），请稍后重试。`;
+      const fallback = response.status === 401 ? 'Enter the studio access code before opening paid messages.'
+        : response.status === 404 ? 'Paid messages are not enabled. Please try again later.'
+          : `Request failed (HTTP ${response.status}). Please try again later.`;
       throw Object.assign(new Error(readableError(detail || fallback)), { status: response.status, code: detail });
     }
     return result;
@@ -193,28 +193,28 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
   function selectedTier() { return pricing?.tiers.find(tier => tier.id === selectedTierId); }
   function updateEstimate() {
     const tier = selectedTier();
-    $('mc-estimate').textContent = tier ? `${tier.price} U · 上榜 ${displayDuration(tier.durationSeconds)}，从实际展示起计时`
-      : '选择档位以确认价格和上榜时长';
+    $('mc-estimate').textContent = tier ? `${tier.price} U · Displayed for ${displayDuration(tier.durationSeconds)}, timed from when it appears`
+      : 'Choose a tier to confirm its price and display duration';
     $('mc-pricing-notice').textContent = pricingNotice;
     $('mc-pricing-notice').hidden = !pricingNotice;
   }
   function renderConfig() {
     const enabled = Boolean(config?.enabled && activeChains().length && pricing);
     const lowest = minimumTier(pricing);
-    const reason = enabled ? '选择留言档位，支付确认后主播优先回应。'
-      : configProblem || (config?.enabled && !pricing ? '收费档位暂不可用，请稍后刷新。'
-        : readableError(config?.reason || '收款尚未配置，暂不可创建订单或付款。'));
-    $('mc-service-state').textContent = enabled ? `${lowest.price} U / ${displayDuration(lowest.durationSeconds)}起 · ${activeChains().length} 个付款网络可用` : reason;
+    const reason = enabled ? 'Choose a message tier. The host gives paid messages priority after payment is confirmed.'
+      : configProblem || (config?.enabled && !pricing ? 'Pricing tiers are temporarily unavailable. Refresh later.'
+        : readableError(config?.reason || 'Payments are not configured. You cannot create an order or pay yet.'));
+    $('mc-service-state').textContent = enabled ? `From ${lowest.price} U / ${displayDuration(lowest.durationSeconds)} · ${activeChains().length} payment networks available` : reason;
     $('mc-explainer').textContent = lowest
-      ? `${lowest.price} U 起，最低价档位上榜 ${displayDuration(lowest.durationSeconds)}。按标价转账，Gas 由用户另付；请使用可签名的付款钱包。支付确认后展示代币 Logo、CA 和留言，主播按优先队列回应。`
-      : '选择留言档位，确认价格和上榜时长。支付确认后展示代币 Logo、CA 和留言，主播按优先队列回应。';
+      ? `From ${lowest.price} U, with ${displayDuration(lowest.durationSeconds)} of display time at the lowest tier. Send the listed amount and pay gas separately, using a wallet that supports signing. Once payment is confirmed, your token logo, contract address, and message appear, and the host responds through the priority queue.`
+      : 'Choose a message tier and confirm its price and display duration. Once payment is confirmed, your token logo, contract address, and message appear, and the host responds through the priority queue.';
     $('mc-config-status').textContent = reason;
     $('mc-config-status').hidden = enabled;
-    $('mc-open').textContent = orderId ? '查看我的订单' : enabled ? '付费留言 ↗' : '查看付费留言';
+    $('mc-open').textContent = orderId ? 'View my order' : enabled ? 'Paid message ↗' : 'View paid messages';
     $('mc-create').disabled = busy || !enabled || !selectedTier();
     $('mc-tier').replaceChildren();
     const placeholder = document.createElement('option');
-    placeholder.value = ''; placeholder.textContent = pricing ? '请选择留言档位' : '正在读取收费档位…';
+    placeholder.value = ''; placeholder.textContent = pricing ? 'Select a message tier' : 'Loading pricing tiers…';
     $('mc-tier').append(placeholder);
     for (const tier of pricing?.tiers || []) {
       const option = document.createElement('option');
@@ -230,7 +230,7 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
       const option = document.createElement('option');
       option.value = chain.id;
       const available = Boolean(chain.enabled && chain.recipient);
-      option.textContent = `${chain.label} · ${chain.asset}${available ? '' : '（暂未配置）'}`;
+      option.textContent = `${chain.label} · ${chain.asset}${available ? '' : ' (not configured)'}`;
       option.disabled = !available;
       $('mc-chain').append(option);
     }
@@ -248,7 +248,7 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
         const nextPricing = normalizePricing(next.pricing);
         if (pricing && JSON.stringify(pricing) !== JSON.stringify(nextPricing)) {
           selectedTierId = '';
-          pricingNotice = '收费档位已更新，请重新选择并确认价格与停留时间。';
+          pricingNotice = 'Pricing has changed. Select a tier again and confirm its price and display duration.';
         }
         config = next; pricing = nextPricing; configProblem = '';
       } catch (error) { configProblem = readableError(error); }
@@ -257,7 +257,7 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
     await configPromise;
     if (requireSelection) {
       selectedTierId = '';
-      pricingNotice = '收费档位已更新，请重新选择并确认价格与停留时间；本次未创建新订单。';
+      pricingNotice = 'Pricing has changed. Select a tier again and confirm its price and display duration. No new order was created.';
       renderConfig();
     }
   }
@@ -278,7 +278,7 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
     $('mc-pay-amount').textContent = `${order.payAmount} ${order.asset}`;
     $('mc-recipient').textContent = order.recipient;
     const paymentToken = paymentTokenDetails(order, config);
-    $('mc-payment-token-address').textContent = paymentToken.address || '暂未读取到合约信息，请刷新订单后核对。';
+    $('mc-payment-token-address').textContent = paymentToken.address || 'Contract information is unavailable. Refresh the order and check it again.';
     $('mc-payment-token-note').textContent = paymentToken.note;
     $('mc-order-ca').textContent = order.ca || '—';
     $('mc-order-token-chain').textContent = chainLabel(order.tokenChain || order.chain);
@@ -286,17 +286,17 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
     $('mc-order-duration').textContent = orderDisplayDuration(order);
     $('mc-payment-warning').hidden = paid || expired;
     $('mc-payment-warning').textContent = order.paymentMode === 'exact-wallet-v1'
-      ? '请从自己的钱包按标价转账，Gas 由用户另付。提交交易哈希后，需使用付款钱包签名认领订单；此签名只核验交易归属。交易所直接提现暂不支持。'
-      : '此为原有订单，请严格按上方原支付数量（含识别零头）转账，Gas 由用户另付；原订单金额及展示时长保持。';
+      ? 'Send the listed amount from your own wallet and pay gas separately. After submitting the transaction hash, sign with the payment wallet to claim the order. This signature only verifies transaction ownership. Direct withdrawals from exchanges are not supported.'
+      : 'This is an existing order. Send exactly the original amount shown above, including its identifying fractional amount, and pay gas separately. The original order amount and display duration remain unchanged.';
     $('mc-verify-form').hidden = paid;
     $('mc-payment-instructions').hidden = paid || expired;
     $('mc-order-expiry-row').hidden = paid || expired;
     $('mc-verify').disabled = busy;
-    $('mc-verify').textContent = busy ? '正在核验…' : expired ? '核验到期前已付款交易'
-      : order.state === 'confirming' ? '重新验证交易' : '提交交易哈希验证';
+    $('mc-verify').textContent = busy ? 'Verifying…' : expired ? 'Verify a payment sent before expiry'
+      : order.state === 'confirming' ? 'Verify transaction again' : 'Verify transaction hash';
     $('mc-order-refresh').disabled = busy;
     $('mc-new').disabled = busy;
-    $('mc-new').textContent = paid || expired ? '写一条新留言' : '另建一条留言';
+    $('mc-new').textContent = paid || expired ? 'Write a new message' : 'Create another message';
     $('mc-prior-order-note').hidden = paid || expired;
     if (order.txHash && !$('mc-tx').value) $('mc-tx').value = order.txHash;
     updateClock();
@@ -307,7 +307,7 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
   }
   function acceptOrder(value) {
     if (!value?.id || !value.chain || !value.payAmount || !value.recipient || !value.asset) {
-      throw new Error('订单信息不完整，请刷新订单；请勿在信息不完整时付款。');
+      throw new Error('Order details are incomplete. Refresh the order and do not pay until all details are available.');
     }
     order = value;
     orderId = value.id;
@@ -344,7 +344,7 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
     if (orderId) {
       form.hidden = true;
       $('mc-order-panel').hidden = !order;
-      if (!order) setError('正在恢复你的订单…');
+      if (!order) setError('Restoring your order…');
       void refreshOrder({ report: true });
     }
   });
@@ -370,14 +370,14 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
   $('mc-recover-new').addEventListener('click', startNew);
   $('mc-order-refresh').addEventListener('click', () => void refreshOrder({ report: true }));
   $('mc-copy').addEventListener('click', async () => {
-    try { await clipboard.writeText(order.recipient); $('mc-copy').textContent = '已复制'; }
-    catch { setError('无法自动复制，请选中收款地址手动复制。'); }
+    try { await clipboard.writeText(order.recipient); $('mc-copy').textContent = 'Copied'; }
+    catch { setError('Copy failed. Select the recipient address and copy it manually.'); }
   });
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (busy || !config?.enabled || !activeChains().length || !form.reportValidity()) return;
     const tier = selectedTier();
-    if (!tier || !pricing) { setError('请选择当前可用的留言档位。'); return; }
+    if (!tier || !pricing) { setError('Select an available message tier.'); return; }
     const quote = { amount: tier.price, tierId: tier.id, pricingRevision: pricing.revision };
     const paymentChain = $('mc-chain').value;
     busy = true;
@@ -389,12 +389,12 @@ export function installModuleC({ document = globalThis.document, fetcher = fetch
         tokenChain: $('mc-token-chain').value, ca: $('mc-ca').value.trim(),
         message: $('mc-message').value.trim(), name: $('mc-name').value.trim(), ...quote });
       acceptOrder(result);
-      $('mc-copy').textContent = '复制';
+      $('mc-copy').textContent = 'Copy';
     } catch (error) {
       if (error.status === 409 || ['PRICING_REVISION_CONFLICT', 'INVALID_ORDER_PRICING', 'INVALID_PRICING_TIER',
         'ORDER_PRICE_MISMATCH', 'AMOUNT_MUST_MATCH_PRICING_TIER', 'TIER_NOT_AVAILABLE', 'PRICE_MISMATCH'].includes(error.code)) {
         await refreshConfig({ requireSelection: true });
-        setError('请重新选择档位并确认后再创建订单。');
+        setError('Select a tier again and confirm it before creating an order.');
       } else setError(readableError(error));
     }
     finally { busy = false; renderConfig(); renderOrder(); }

@@ -10,7 +10,7 @@ export function streamDimensions(stream = {}) {
   const height = Math.floor(Number(stream.height));
   const fps = Number(stream.fps);
   const resolution = width > 0 && height > 0 ? `${width} × ${height}` : '—';
-  return { resolution, fps: fps > 0 ? `${Number(fps.toFixed(2))} FPS` : '帧率待上报' };
+  return { resolution, fps: fps > 0 ? `${Number(fps.toFixed(2))} FPS` : 'Waiting for frame rate' };
 }
 
 // Local playlist health is independent of its generator. Reason: GPU loss must neither clear local idle nor disable stalled-viewer recovery.
@@ -28,7 +28,7 @@ export function queueCount(queue = {}) {
 
 export function currentTask(queue = {}) {
   if (!queue.current) return null;
-  return typeof queue.current === 'object' ? queue.current.id || '执行中' : queue.current;
+  return typeof queue.current === 'object' ? queue.current.id || 'Running' : queue.current;
 }
 
 export function mergeChatStatus(previous, incoming) {

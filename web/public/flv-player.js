@@ -47,7 +47,7 @@ export class FlvPlayer {
       this.recordPlayback('waiting'); this.liveSync.recover();
       this.diagnostics.waiting(video, this.bufferAhead());
       if (this.firstFrameMs !== null) this.waitingAfterFirstFrame++;
-      this.setState('buffering', '视频传输恢复中');
+      this.setState('buffering', 'Recovering the video connection');
     });
     video.addEventListener('canplay', () => { this.syncPlayback(); void this.tryPlay(); });
     for (const event of ['timeupdate', 'progress']) video.addEventListener(event, () => { this.syncPlayback(); });
@@ -71,10 +71,10 @@ export class FlvPlayer {
   start() {
     if (!this.broadcastLive || this.started !== null) return;
     const generation = ++this.generation; this.started = this.now(); this.resetMetrics();
-    this.diagnostics.reset(this.video); this.setState('buffering', '正在接入持续直播');
+    this.diagnostics.reset(this.video); this.setState('buffering', 'Connecting to the continuous live stream');
     let supported = false;
     try { supported = this.Mpegts.isSupported() && this.Mpegts.getFeatureList().mseLivePlayback; } catch { /* Unsupported browsers stay explicit. */ }
-    if (!supported) { this.setState('error', '此浏览器不支持持续直播视频'); return; }
+    if (!supported) { this.setState('error', 'This browser does not support continuous live video'); return; }
     this.openEngine(generation);
     const frame = now => {
       if (generation !== this.generation) return;
@@ -128,21 +128,21 @@ export class FlvPlayer {
         this.httpStats.fatalErrors++;
         const known = Object.values(this.Mpegts.ErrorDetails ?? {}).includes(detail) ? detail : 'MediaUnavailable';
         const code = Number.isInteger(info?.code) && info.code >= 100 && info.code <= 599 ? ` (${info.code})` : '';
-        this.onLog(`视频连接错误：${known}${code}`);
-        if ([401, 403].includes(info?.code)) { this.setState('error', '请重新验证访问后连接'); return; }
+        this.onLog(`Video connection error: ${known}${code}`);
+        if ([401, 403].includes(info?.code)) { this.setState('error', 'Verify your access again to reconnect'); return; }
         if ([this.Mpegts.ErrorTypes.NETWORK_ERROR, this.Mpegts.ErrorTypes.MEDIA_ERROR].includes(type)) this.scheduleReconnect(generation, engine);
-        else this.setState('error', '请点击重新连接');
+        else this.setState('error', 'Click to reconnect');
       });
       engine.on(this.Mpegts.Events.LOADING_COMPLETE, () => { if (current()) this.scheduleReconnect(generation, engine); });
       engine.attachMediaElement(this.video); engine.load(); void this.tryPlay();
     } catch {
       if (this.engine === engine) { this.engine?.destroy(); this.engine = null; }
-      this.setState('error', '持续视频连接未能建立');
+      this.setState('error', 'Could not establish the continuous video connection');
     }
   }
   scheduleReconnect(generation, engine) {
     if (!this.broadcastLive || this.retryTimer !== null || generation !== this.generation || this.engine !== engine) return;
-    this.setState('buffering', '视频连接正在恢复'); this.onLog('持续视频连接正在恢复');
+    this.setState('buffering', 'Recovering the video connection'); this.onLog('Recovering the continuous video connection');
     const delay = Math.min(5000, 250 * 2 ** Math.min(this.reconnectAttempts++, 5));
     this.retryTimer = this.setTimer(() => {
       this.retryTimer = null;
@@ -195,7 +195,7 @@ export class FlvPlayer {
     const generation = this.generation, engine = this.engine; this.playPending = true;
     try { this.diagnostics.playCall(); await engine.play(); }
     catch (error) {
-      if (generation === this.generation && engine === this.engine) this.setState(error.name === 'NotAllowedError' ? 'blocked' : 'buffering', '点击继续播放');
+      if (generation === this.generation && engine === this.engine) this.setState(error.name === 'NotAllowedError' ? 'blocked' : 'buffering', 'Click to resume playback');
     } finally { if (generation === this.generation && engine === this.engine) this.playPending = false; }
   }
   positionStartup() {

@@ -40,7 +40,7 @@ const playbackReporter = new PlaybackReporter({
 });
 
 function log(message) {
-  const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+  const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
   logEntries.push(`${time}  ${message}`);
   if (logEntries.length > 20) logEntries.shift();
   $('diagnostic-log').textContent = logEntries.join('\n');
@@ -97,15 +97,15 @@ async function request(path, options = {}) {
     const data = await response.json().catch(() => ({}));
     if (response.status === 401) {
       showLogin();
-      throw new Error(path === '/api/login' ? '访问码不正确，请重试。' : '请先输入访问码。');
+      throw new Error(path === '/api/login' ? 'Incorrect access code. Please try again.' : 'Please enter your access code first.');
     }
     if (!response.ok) {
       const detail = typeof data.error === 'string' ? data.error : data.message;
-      throw new Error(detail || `请求失败（${response.status}）`);
+      throw new Error(detail || `Request failed (${response.status})`);
     }
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') throw new Error('服务器响应超时，请检查网络后重试。');
+    if (error.name === 'AbortError') throw new Error('The server timed out. Check your connection and try again.');
     throw error;
   } finally {
     clearTimeout(timer);
@@ -122,7 +122,7 @@ function applyStatus(next) {
   };
   if (!nativeRealtime && clearOnWorkerLoss(previousStatus, status)) {
     clearPlayback();
-    log('渲染设备已离线，旧画面已清除。');
+    log('The rendering device is offline. The previous video has been cleared.');
   }
   render();
 }
@@ -130,10 +130,10 @@ function applyStatus(next) {
 async function refreshStatus() {
   try {
     applyStatus(await request('/api/status'));
-    if (lastStatusError) log('服务器状态请求已恢复。');
+    if (lastStatusError) log('Server status requests have recovered.');
     lastStatusError = '';
   } catch (error) {
-    if (lastStatusError !== error.message) log(`状态请求失败：${error.message}`);
+    if (lastStatusError !== error.message) log(`Status request failed: ${error.message}`);
     lastStatusError = error.message;
     render();
   }
@@ -161,7 +161,7 @@ async function initialize() {
     if (await refreshAuth()) connect();
   } catch (error) {
     socketState = 'closed';
-    log(`访问验证失败：${error.message}`);
+    log(`Access verification failed: ${error.message}`);
     render();
     if (!stopped && authenticated) reconnectTimer = setTimeout(initialize, 5000);
   }
@@ -190,7 +190,7 @@ function connect() {
     if (socket !== connection) return;
     socketState = 'open';
     reconnectAttempts = 0;
-    log('实时连接已建立，等待视频源状态。');
+    log('Live connection established. Waiting for the video source status.');
     render();
   };
   connection.onmessage = ({ data }) => {
@@ -213,13 +213,13 @@ function connect() {
         observeMediaAppend();
       } else if (event.type === 'chat.event') addMessage(event);
     } catch (error) {
-      log(`实时消息处理失败：${error.message}`);
+      log(`Could not process the live message: ${error.message}`);
     }
   };
   connection.onerror = () => {
     if (socket === connection) {
-      log('实时连接发生网络错误。');
-      refreshAuth().catch((error) => log(`访问状态检查失败：${error.message}`));
+      log('A network error interrupted the live connection.');
+      refreshAuth().catch((error) => log(`Access status check failed: ${error.message}`));
     }
   };
   connection.onclose = (event) => {
@@ -228,13 +228,13 @@ function connect() {
     socketState = 'closed';
     if (!nativeRealtime) clearPlayback();
     if (event.code === 1008 && status.authRequired) {
-      log('实时连接需要有效的访问码。');
+      log('A valid access code is required for the live connection.');
       showLogin();
       return;
     }
     const wait = Math.min(15000, 1000 * 2 ** Math.min(reconnectAttempts, 4));
     reconnectAttempts += 1;
-    log(`实时连接已断开（${event.code}），${wait / 1000} 秒后重试。`);
+    log(`Live connection closed (${event.code}). Retrying in ${wait / 1000} s.`);
     render();
     reconnectTimer = setTimeout(connect, wait);
   };
@@ -310,61 +310,61 @@ function render() {
   const dimensions = streamDimensions(stream);
   const pending = queueCount(status.queue);
   const current = currentTask(status.queue);
-  let connectionLabel = '渲染设备离线';
+  let connectionLabel = 'Rendering device offline';
   let connectionStyle = 'offline';
-  if (!authenticated) { connectionLabel = '需要访问码'; connectionStyle = 'error'; }
-  else if (!broadcastLive) { connectionLabel = livePlaybackState.state === 'stopped' ? '已停播' : '直播暂不可用'; connectionStyle = 'offline'; }
-  else if (socketState !== 'open') { connectionLabel = socketState === 'connecting' ? '正在连接' : '连接已断开'; connectionStyle = 'connecting'; }
-  else if (connected) { connectionLabel = test ? '测试流已连接' : real ? '数字人已连接' : '设备已连接'; connectionStyle = test ? 'test' : 'online'; }
-  else if (local && ready) { connectionLabel = actorPreview ? 'GPU持续画面 · 互动离线' : '待机播放中 · GPU离线'; connectionStyle = 'online'; }
+  if (!authenticated) { connectionLabel = 'Access code required'; connectionStyle = 'error'; }
+  else if (!broadcastLive) { connectionLabel = livePlaybackState.state === 'stopped' ? 'Broadcast stopped' : 'Broadcast unavailable'; connectionStyle = 'offline'; }
+  else if (socketState !== 'open') { connectionLabel = socketState === 'connecting' ? 'Connecting' : 'Disconnected'; connectionStyle = 'connecting'; }
+  else if (connected) { connectionLabel = test ? 'Test stream connected' : real ? 'Avatar connected' : 'Device connected'; connectionStyle = test ? 'test' : 'online'; }
+  else if (local && ready) { connectionLabel = actorPreview ? 'Continuous GPU video · interaction offline' : 'Idle video playing · GPU offline'; connectionStyle = 'online'; }
   $('connection-label').textContent = connectionLabel;
   $('connection-pill').dataset.state = connectionStyle;
   $('access-button').hidden = !status.authRequired;
   $('stage-dot').className = `status-dot${ready ? test ? ' test' : ' active' : ''}`;
-  $('source-tag').textContent = actorPreview ? 'GPU持续上行预览' : local ? status.local.kind === 'speech' ? '互动回复播放中' : '本地待机播放' : connected ? test ? '测试视频源' : real ? 'GPU · LiveTalking' : worker.engine || '已连接设备' : '未连接视频源';
+  $('source-tag').textContent = actorPreview ? 'Continuous GPU stream preview' : local ? status.local.kind === 'speech' ? 'Playing a chat response' : 'Local idle playback' : connected ? test ? 'Test video source' : real ? 'GPU · LiveTalking' : worker.engine || 'Connected device' : 'No video source connected';
   $('source-tag').classList.toggle('test', test && connected);
-  $('session-label').textContent = actorPreview ? 'GPU连续技术流' : local ? status.local.kind === 'speech' ? '互动回复' : '本地待机轮播' : connected ? test ? '测试模式' : `视频批次 ${stream.epoch ?? '准备中'}` : '等待视频源';
-  $('worker-value').textContent = connected ? test ? '测试源' : 'GPU 在线' : '离线';
-  $('worker-note').textContent = connected ? worker.engine || '渲染引擎已接入' : '等待设备接入';
+  $('session-label').textContent = actorPreview ? 'Continuous GPU stream' : local ? status.local.kind === 'speech' ? 'Chat response' : 'Local idle playlist' : connected ? test ? 'Test mode' : `Video session ${stream.epoch ?? 'preparing'}` : 'Waiting for a video source';
+  $('worker-value').textContent = connected ? test ? 'Test source' : 'GPU online' : 'Offline';
+  $('worker-note').textContent = connected ? worker.engine || 'Rendering engine connected' : 'Waiting for a device';
   $('format-value').textContent = ready ? dimensions.resolution : '—';
-  $('format-note').textContent = ready ? dimensions.fps : '以视频源上报为准';
-  $('queue-value').replaceChildren(document.createTextNode(String(pending)), Object.assign(document.createElement('span'), { textContent: ' 项' }));
-  $('queue-note').textContent = stopping ? '正在停止当前任务' : current ? '当前正在处理任务' : '暂无正在执行的任务';
+  $('format-note').textContent = ready ? dimensions.fps : 'Reported by the video source';
+  $('queue-value').replaceChildren(document.createTextNode(String(pending)), Object.assign(document.createElement('span'), { textContent: ' tasks' }));
+  $('queue-note').textContent = stopping ? 'Stopping the current task' : current ? 'Processing a task' : 'No active task';
   $('test-banner').hidden = !ready || !test;
   $('live-badge').hidden = !visible;
   $('live-badge').classList.toggle('test', test);
   $('live-label').textContent = test ? 'TEST' : 'LIVE';
   $('video-stage').dataset.state = visible ? 'playing' : connected ? 'waiting' : 'offline';
   video.setAttribute('aria-hidden', String(!visible));
-  if (!authenticated) setOverlay('PRIVATE ACCESS', '输入访问码后连接', '此演播室启用了访问保护。请使用右上角的锁形按钮登录。');
+  if (!authenticated) setOverlay('PRIVATE ACCESS', 'Enter your access code to connect', 'This studio requires an access code. Use the lock button in the top-right corner to sign in.');
   else if (!broadcastLive) setOverlay(livePlaybackState.state === 'stopped' ? 'BROADCAST ENDED' : 'BROADCAST UNAVAILABLE',
-    livePlaybackState.state === 'stopped' ? '直播已停止' : '直播暂不可用',
-    livePlaybackState.state === 'stopped' ? '主播已停止直播，重新开播后画面会自动恢复。' : '正在确认直播状态，恢复后会自动接入。');
+    livePlaybackState.state === 'stopped' ? 'Broadcast stopped' : 'Broadcast unavailable',
+    livePlaybackState.state === 'stopped' ? 'The host has ended the broadcast. Video will return automatically when the broadcast restarts.' : 'Checking the broadcast status. The player will reconnect automatically when it is available.');
   else if (nativeRealtime && visible) $('stage-overlay').hidden = true;
-  else if (!online) setOverlay('CONNECTION INTERRUPTED', socketState === 'connecting' ? '正在连接演播室' : '实时连接已断开', '正在尝试恢复连接。');
-  else if (!worker.connected && !local) setOverlay('WAITING FOR SOURCE', '等待数字人上线', '网页已就绪。连接渲染设备后，实时画面会出现在这里。');
-  else if (!stream.ready) setOverlay('SOURCE CONNECTED', '视频源准备中', '渲染设备已连接，正在等待可播放的视频片段。');
-  else if (mediaState.state === 'error') setOverlay('PLAYBACK DIAGNOSTIC', '暂时无法播放', mediaState.detail);
-  else if (mediaState.state === 'blocked') setOverlay('READY TO PLAY', '画面已就绪', '浏览器需要一次点击才能开始播放。', true);
-  else if (mediaState.state === 'paused') setOverlay('PLAYBACK PAUSED', '实时画面已暂停', '点击继续播放，将自动回到直播画面。', true);
-  else if (!visible) setOverlay('BUFFERING LIVE VIDEO', '正在缓冲实时画面', mediaState.detail || '已连接视频源，正在等待播放器解码。');
+  else if (!online) setOverlay('CONNECTION INTERRUPTED', socketState === 'connecting' ? 'Connecting to the studio' : 'Live connection lost', 'Trying to reconnect.');
+  else if (!worker.connected && !local) setOverlay('WAITING FOR SOURCE', 'Waiting for the avatar', 'The page is ready. Live video will appear here once a rendering device connects.');
+  else if (!stream.ready) setOverlay('SOURCE CONNECTED', 'Preparing the video source', 'The rendering device is connected. Waiting for playable video segments.');
+  else if (mediaState.state === 'error') setOverlay('PLAYBACK DIAGNOSTIC', 'Playback unavailable', mediaState.detail);
+  else if (mediaState.state === 'blocked') setOverlay('READY TO PLAY', 'Video ready', 'Click once to allow playback in your browser.', true);
+  else if (mediaState.state === 'paused') setOverlay('PLAYBACK PAUSED', 'Live video paused', 'Click to resume and return to the live video.', true);
+  else if (!visible) setOverlay('BUFFERING LIVE VIDEO', 'Buffering live video', mediaState.detail || 'The video source is connected. Waiting for the player to decode it.');
   else $('stage-overlay').hidden = true;
-  const playbackText = !broadcastLive ? livePlaybackState.state === 'stopped' ? '已停播' : '直播暂不可用' : visible ? test ? '测试画面播放中' : '实时播放中' : ready ? mediaState.state === 'error' ? '播放异常' : '等待播放' : '尚无视频';
+  const playbackText = !broadcastLive ? livePlaybackState.state === 'stopped' ? 'Broadcast stopped' : 'Broadcast unavailable' : visible ? test ? 'Playing test video' : 'Playing live' : ready ? mediaState.state === 'error' ? 'Playback error' : 'Waiting for playback' : 'No video yet';
   $('playback-label').textContent = playbackText;
   $('playback-dot').className = `status-dot${visible ? test ? ' test' : ' active' : ''}`;
-  $('chat-title').textContent = connected ? llm ? '对话回复' : '文字播报' : '文字互动';
-  $('chat-context-label').textContent = connected ? test ? '仅验证连接与视频 · 暂不接受文字任务' : llm ? '本地模型生成回复，再由数字人播报' : '直接朗读输入文字 · 不生成 AI 回答' : '渲染设备上线后可发送文字';
-  $('empty-chat-description').textContent = test ? '当前播放连接测试信号，不包含数字人或语音生成。接入真实渲染设备后即可提交文字。' : llm ? '发送问题，数字人将通过已配置的模型生成回复。任务和处理状态会显示在这里。' : '输入内容，数字人会在画面中说出来。已提交的任务和处理状态会显示在这里。';
-  input.placeholder = llm ? '想和数字人聊些什么？' : '想让数字人说些什么？';
+  $('chat-title').textContent = connected ? llm ? 'Chat responses' : 'Read aloud' : 'Text chat';
+  $('chat-context-label').textContent = connected ? test ? 'Connection and video test only · text tasks unavailable' : llm ? 'A local model writes the response, then the avatar speaks it' : 'Reads your text aloud · no AI response generation' : 'Text input will be available when the rendering device connects';
+  $('empty-chat-description').textContent = test ? 'This is a connection test signal without avatar or speech generation. Connect a rendering device to submit text.' : llm ? 'Ask a question and the avatar will respond using the configured model. Your tasks and their status will appear here.' : 'Enter text for the avatar to say on screen. Your submitted tasks and their status will appear here.';
+  input.placeholder = llm ? 'What would you like to talk about?' : 'What would you like the avatar to say?';
   const voice = worker.voice;
   const voiceLabel = typeof voice === 'string' ? voice : voice?.label || voice?.name || voice?.id;
-  $('voice-status').textContent = voiceLabel ? `音色：${voiceLabel}${typeof voice === 'object' && voice.cloned === false ? ' · 基础音色，未克隆' : typeof voice === 'object' && voice.cloned === true ? ' · 已克隆' : ''}` : '音色信息等待设备上报';
-  $('composer-notice').textContent = !broadcastLive ? '直播未开启，暂不可发送互动' : !authenticated ? '请先输入访问码' : !online ? '实时连接恢复后可发送' : !worker.connected ? actorPreview ? '互动生成设备尚未连接' : local ? '待机继续播放，互动生成设备尚未连接' : '视频源尚未连接' : !stream.ready ? '等待视频源准备就绪' : mediaState.state === 'error' ? '请先恢复视频播放' : stopping ? '正在停止当前任务，请稍候再发送' : test ? '连接测试模式 · 数字人播报尚未启用' : mediaState.state !== 'playing' ? '等待画面恢复播放后可发送' : current ? '任务处理中，新文字将进入队列' : llm ? '已就绪，发送问题以开始对话' : '已就绪，发送文字以开始播报';
+  $('voice-status').textContent = voiceLabel ? `Voice: ${voiceLabel}${typeof voice === 'object' && voice.cloned === false ? ' · standard voice, not cloned' : typeof voice === 'object' && voice.cloned === true ? ' · cloned' : ''}` : 'Waiting for the device to report its voice';
+  $('composer-notice').textContent = !broadcastLive ? 'The broadcast is offline. Chat is unavailable.' : !authenticated ? 'Enter your access code first' : !online ? 'You can send messages once the connection recovers' : !worker.connected ? actorPreview ? 'The interaction generation device is not connected' : local ? 'Idle playback continues. The interaction generation device is not connected.' : 'No video source is connected' : !stream.ready ? 'Waiting for the video source to be ready' : mediaState.state === 'error' ? 'Resume video playback first' : stopping ? 'Stopping the current task. Please wait before sending another.' : test ? 'Connection test mode · avatar speech is not enabled' : mediaState.state !== 'playing' ? 'Wait for video playback to resume before sending' : current ? 'A task is in progress. New messages will be queued.' : llm ? 'Ready. Send a question to start a conversation.' : 'Ready. Send text to hear it spoken.';
   input.disabled = unavailable;
   $('send-button').disabled = unavailable || sending || !input.value.trim();
   $('interrupt-button').disabled = !connected || (!current && !status.autonomous?.enabled) || stopping;
-  $('diag-socket').textContent = !authenticated ? '需要访问码' : socketState === 'open' ? '已连接 · WebSocket' : socketState === 'connecting' ? '连接中' : '已断开 · 等待重连';
-  $('diagnostic-summary').replaceChildren(document.createTextNode(mediaState.state === 'error' ? '播放异常 · 查看详情' : connectionLabel), Object.assign(document.createElement('span'), { className: 'chevron', textContent: '⌄' }));
+  $('diag-socket').textContent = !authenticated ? 'Access code required' : socketState === 'open' ? 'Connected · WebSocket' : socketState === 'connecting' ? 'Connecting' : 'Disconnected · waiting to reconnect';
+  $('diagnostic-summary').replaceChildren(document.createTextNode(mediaState.state === 'error' ? 'Playback error · view details' : connectionLabel), Object.assign(document.createElement('span'), { className: 'chevron', textContent: '⌄' }));
   updateAudio();
 }
 
@@ -391,12 +391,12 @@ function addMessage(event) {
     header.className = 'message-header';
     const avatar = document.createElement('span');
     avatar.className = 'message-avatar';
-    avatar.textContent = role === 'user' ? '我' : role === 'assistant' ? 'S' : '·';
+    avatar.textContent = role === 'user' ? 'Me' : role === 'assistant' ? 'S' : '·';
     const label = document.createElement('span');
-    label.textContent = role === 'user' ? '你' : role === 'assistant' ? '数字人' : '系统';
+    label.textContent = role === 'user' ? 'You' : role === 'assistant' ? 'Avatar' : 'System';
     const time = document.createElement('time');
     time.dateTime = new Date().toISOString();
-    time.textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    time.textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
     header.append(avatar, label, time);
     const text = document.createElement('p');
     text.className = 'message-text';
@@ -414,23 +414,23 @@ function addMessage(event) {
   }
   if (event.source === 'autonomous-crypto') {
     entry.element.dataset.source = event.source;
-    if (role === 'assistant') entry.label.textContent = '数字人 · 主动 Crypto';
+    if (role === 'assistant') entry.label.textContent = 'Avatar · autonomous crypto commentary';
   }
   if (typeof event.text === 'string') entry.text.textContent = event.text;
   if (typeof event.error === 'string') entry.error = event.error;
   const state = mergeChatStatus(entry.element.dataset.status, event.status);
   entry.element.dataset.status = state;
-  const labels = { queued: '已加入队列', running: '正在处理', done: '处理完成', error: '处理失败', interrupted: '已停止' };
-  entry.state.textContent = state === 'error' && entry.error ? `处理失败：${entry.error}` : labels[state] || '';
-  $('chat-count').textContent = `${messages.size} 条`;
+  const labels = { queued: 'Queued', running: 'Processing', done: 'Completed', error: 'Failed', interrupted: 'Stopped' };
+  entry.state.textContent = state === 'error' && entry.error ? `Failed: ${entry.error}` : labels[state] || '';
+  $('chat-count').textContent = `${messages.size} messages`;
   if (nearBottom || role === 'user') $('messages').scrollTop = $('messages').scrollHeight;
 }
 
 function updateAudio() {
   const enabled = !video.muted;
   $('audio-button').setAttribute('aria-pressed', String(enabled));
-  $('audio-button').setAttribute('aria-label', enabled ? '关闭声音' : '启用声音');
-  $('audio-label').textContent = enabled ? '声音已开启' : '启用声音';
+  $('audio-button').setAttribute('aria-label', enabled ? 'Mute' : 'Enable sound');
+  $('audio-label').textContent = enabled ? 'Sound enabled' : 'Enable sound';
   $('audio-icon').firstElementChild.setAttribute('href', enabled ? '#i-audio' : '#i-mute');
 }
 
@@ -447,11 +447,11 @@ $('chat-form').addEventListener('submit', async (event) => {
     addMessage({ id: result.id, role: 'user', text, status: 'queued' });
     input.value = '';
     input.dispatchEvent(new Event('input'));
-    toast(`任务已提交${Number.isFinite(result.position) ? ` · 队列位置 ${result.position}` : ''}`);
+    toast(`Task submitted${Number.isFinite(result.position) ? ` · queue position ${result.position}` : ''}`);
   } catch (error) {
     playbackReporter.requestSettled(reportIndex, false);
-    toast(error.message || '发送失败，请重试。');
-    log(`任务提交失败：${error.message}`);
+    toast(error.message || 'Could not send. Please try again.');
+    log(`Task submission failed: ${error.message}`);
   } finally {
     sending = false;
     render();
@@ -477,7 +477,7 @@ $('interrupt-button').addEventListener('click', async () => {
     await request('/api/interrupt', { method: 'POST' });
     applyStatus({ autonomous: { ...status.autonomous, enabled: false, state: 'disabled' } });
     void refreshStatus();
-    toast('已发送打断请求。');
+    toast('Interrupt request sent.');
   } catch (error) { toast(error.message); }
   finally { render(); }
 });
@@ -485,7 +485,7 @@ $('audio-button').addEventListener('click', () => {
   video.muted = !video.muted;
   updateAudio();
   if (livePlayback.isLive() && !video.muted && (player.source || nativeRealtime)) player.tryPlay(true);
-  else if (!video.muted) toast('声音已开启，视频连接后将播放音频。');
+  else if (!video.muted) toast('Sound is enabled. Audio will play when the video connects.');
 });
 video.addEventListener('volumechange', updateAudio);
 $('play-button').addEventListener('click', () => { if (livePlayback.isLive()) player.tryPlay(true); });
@@ -495,8 +495,8 @@ $('fullscreen-button').addEventListener('click', async () => {
     if (document.fullscreenElement) await document.exitFullscreen();
     else if ($('video-stage').requestFullscreen) await $('video-stage').requestFullscreen();
     else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
-    else toast('此浏览器不支持全屏播放。');
-  } catch (error) { toast(`无法进入全屏：${error.message}`); }
+    else toast('This browser does not support fullscreen playback.');
+  } catch (error) { toast(`Could not enter fullscreen: ${error.message}`); }
 });
 document.addEventListener('fullscreenchange', () => { video.controls = Boolean(document.fullscreenElement); });
 // Copy only numeric playback state on explicit user action. Reason: this clipboard trace must not include chat history or credentials.
@@ -505,8 +505,8 @@ $('copy-playback-diagnostics')?.addEventListener('click', async () => {
     const report = { schema: 'sbf-browser-playback-trace-v1', capturedUtc: new Date().toISOString(),
       connection: socketState, ...player.snapshot(), reporting: playbackReporter.snapshot() };
     await navigator.clipboard.writeText(JSON.stringify(report, null, 2));
-    toast('播放诊断已复制，可直接粘贴。');
-  } catch { toast('复制失败，请复制下方诊断日志。'); }
+    toast('Playback diagnostics copied. You can paste them now.');
+  } catch { toast('Could not copy automatically. Please copy the diagnostic log below.'); }
 });
 $('reconnect-button').addEventListener('click', () => {
   reconnectAttempts = 0;
@@ -532,16 +532,16 @@ $('login-form').addEventListener('submit', async (event) => {
     $('access-code').value = '';
     authenticated = true;
     $('login-dialog').close();
-    log('访问验证成功。');
+    log('Access verified.');
     void livePlayback.refresh();
     connect();
     refreshStatus();
   } catch (error) { $('login-error').textContent = error.message; }
   finally { $('login-submit').disabled = false; }
 });
-window.addEventListener('online', () => { log('浏览器网络已恢复。'); if (authenticated) initialize(); });
+window.addEventListener('online', () => { log('The browser is back online.'); if (authenticated) initialize(); });
 window.addEventListener('beforeunload', () => livePlayback.close());
-window.addEventListener('offline', () => { livePlayback.apply('unavailable'); log('浏览器网络已断开。'); socketState = 'closed'; if (!nativeRealtime) clearPlayback(); render(); });
+window.addEventListener('offline', () => { livePlayback.apply('unavailable'); log('The browser is offline.'); socketState = 'closed'; if (!nativeRealtime) clearPlayback(); render(); });
 installBackgroundPlayback({ page: document, lifecycle: window, player,
   connectionState: () => socketState, canReconnect: () => livePlayback.isLive(),
   reconnect: connect, resetWatchdog: () => streamWatchdog.reset(), mediaSession: navigator.mediaSession });
@@ -553,11 +553,11 @@ setInterval(() => {
     const d = snapshot.diagnostics;
     $('diag-mime').textContent = snapshot.transport === 'flv' ? 'HTTPS FLV · H.264 / AAC'
       : snapshot.transport === 'hls' ? 'HTTPS HLS · H.264 / AAC' : 'WebRTC · H.264 / Opus';
-    $('diag-lag').textContent = snapshot.firstFrameMs === null ? '正在连接' : `首画 ${(snapshot.firstFrameMs / 1000).toFixed(2)} 秒`;
+    $('diag-lag').textContent = snapshot.firstFrameMs === null ? 'Connecting' : `First frame ${(snapshot.firstFrameMs / 1000).toFixed(2)} s`;
     const r = snapshot.rtcStats;
     const h = snapshot.httpStats;
-    $('diag-bytes').textContent = h ? `${h.bytesReceived === null ? '累计接收量未提供' : formatBytes(h.bytesReceived)} · HTTPS · 下载 ${(h.lastDownloadMbps ?? 0).toFixed(2)} Mbps · 缓冲 ${snapshot.bufferAheadSeconds.toFixed(2)} 秒` : r ? `${formatBytes(r.bytesReceived ?? 0)} · ${r.protocol ?? '—'} · 收帧 ${r.framesReceived ?? '—'} / 解码 ${r.framesDecoded ?? '—'} · 丢包 ${r.packetsLost ?? '—'} · 解码均值 ${(r.meanDecodeMs ?? 0).toFixed(1)}ms` : '原生实时传输';
-    $('diag-buffer').textContent = `${playbackDiagnosticText(d)} · 可见停画>250ms ${snapshot.visibleGapsOver250Ms}`;
+    $('diag-bytes').textContent = h ? `${h.bytesReceived === null ? 'Total bytes received unavailable' : formatBytes(h.bytesReceived)} · HTTPS · download ${(h.lastDownloadMbps ?? 0).toFixed(2)} Mbps · buffer ${snapshot.bufferAheadSeconds.toFixed(2)} s` : r ? `${formatBytes(r.bytesReceived ?? 0)} · ${r.protocol ?? '—'} · frames received ${r.framesReceived ?? '—'} / decoded ${r.framesDecoded ?? '—'} · packets lost ${r.packetsLost ?? '—'} · mean decode ${(r.meanDecodeMs ?? 0).toFixed(1)}ms` : 'Native realtime transport';
+    $('diag-buffer').textContent = `${playbackDiagnosticText(d)} · visible frame gaps >250 ms ${snapshot.visibleGapsOver250Ms}`;
     $('catchup-button').hidden = true;
     if (!rtcReportPending && authenticated && snapshot.observedSeconds !== null) {
       rtcReportPending = true;
@@ -565,7 +565,7 @@ setInterval(() => {
         body: JSON.stringify({ id: rtcReportId, ...snapshot, ...d, hidden: document.hidden }),
         signal: AbortSignal.timeout(2000) }).catch(() => {}).finally(() => { rtcReportPending = false; });
     }
-    $('local-time').textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    $('local-time').textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
     return;
   }
   playbackReporter.sample(snapshot, { enabled: livePlayback.isLive(),
@@ -578,16 +578,16 @@ setInterval(() => {
     receivedBytes: snapshot.receivedBytes, bufferAheadSeconds: snapshot.bufferAheadSeconds,
     state: snapshot.state,
   })) {
-    log('视频长时间没有进展，正在自动重新连接。');
+    log('Video playback has stalled. Reconnecting automatically.');
     connect();
     return;
   }
   $('diag-bytes').textContent = formatBytes(snapshot.receivedBytes);
-  $('diag-lag').textContent = snapshot.lag === null ? '—' : `${snapshot.lag.toFixed(1)} 秒`;
-  const bufferText = snapshot.hasData ? `向前 ${snapshot.bufferAheadSeconds.toFixed(2)} 秒 · 已存 ${snapshot.bufferSeconds.toFixed(1)} 秒 · 待写入 ${formatBytes(snapshot.queuedBytes)}` : '等待片段';
-  $('diag-buffer').textContent = `${bufferText} · ${playbackDiagnosticText(snapshot.diagnostics)} · 上报HTTP ${reporting.lastHTTPStatus ?? '—'}/${reporting.lastOutcomeCode} · 超时 ${reporting.deadlineCount} · 禁用 ${reporting.disabledReasonCode}`;
+  $('diag-lag').textContent = snapshot.lag === null ? '—' : `${snapshot.lag.toFixed(1)} s`;
+  const bufferText = snapshot.hasData ? `Ahead ${snapshot.bufferAheadSeconds.toFixed(2)} s · stored ${snapshot.bufferSeconds.toFixed(1)} s · pending ${formatBytes(snapshot.queuedBytes)}` : 'Waiting for segments';
+  $('diag-buffer').textContent = `${bufferText} · ${playbackDiagnosticText(snapshot.diagnostics)} · report HTTP ${reporting.lastHTTPStatus ?? '—'}/${reporting.lastOutcomeCode} · timeouts ${reporting.deadlineCount} · disabled ${reporting.disabledReasonCode}`;
   $('catchup-button').hidden = !snapshot.hasData || snapshot.lag < 2;
-  $('local-time').textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+  $('local-time').textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
 }, 1000);
 setInterval(refreshStatus, 10000);
 render();

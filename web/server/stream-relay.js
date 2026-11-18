@@ -61,7 +61,7 @@ export class StreamRelay {
       onFault: error => {
         if (this.closed) return;
         const code = codeOf(error); this.lifetime.scheduler_faults_total++; this.lifetime.last_fault_code = code;
-        this.cancel({ all: true, allowDrain: false }); this.call(() => this.broker.failAll('本地调度故障，正在恢复待机。'));
+        this.cancel({ all: true, allowDrain: false }); this.call(() => this.broker.failAll('Local playback scheduling failed. Restoring standby playback.'));
         // Only a genuine shared scheduler fault rebuilds the epoch, at bounded frequency.
         // Reason: GPU/validator/request faults must not reset every viewer's independent idle clock.
         this.recoveryTimer = this.schedule(() => { this.recoveryTimer = null; if (!this.closed) { this.restart(code); this.publish(); } }, 250);
@@ -81,7 +81,7 @@ export class StreamRelay {
     this.rejected++; this.send(session?.worker || this.broker.worker, { type: 'stream.reply.rejected', id, code });
     if (!failJob) return;
     this.cancel({ id });
-    const terminal = { id, role: 'system', status: 'error', text: '回复流无法继续，待机画面保持播放。', error: code };
+    const terminal = { id, role: 'system', status: 'error', text: 'The reply stream cannot continue. Standby playback will continue.', error: code };
     this.call(() => typeof this.broker.rejectLocalJob === 'function' ? this.broker.rejectLocalJob(id, terminal) : this.finish(id, terminal));
     this.publish();
   }
